@@ -1,0 +1,13 @@
+# Glassmorphism Green Theme Design
+
+## Visual System and Architecture
+
+The UI adopts a clean glassmorphism system built on CSS tokens in `src/index.css`. The global background uses a fresh, natural gradient (`linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%)`) applied to `body`, while the main panel remains a semi-transparent white glass surface so the gradient stays ambient rather than overpowering. The core glass surfaces are defined via `--glass-panel-bg` (rgba(255,255,255,0.65)) and `--glass-card-bg` (rgba(255,255,255,0.4)), paired with `backdrop-filter` blur levels of 20px (panel) and 16px (cards) for the “light” variant. Borders are thin translucent white (`rgba(255,255,255,0.4)`) and shadows are soft, green-tinted for depth. Accent color is restricted to action surfaces only, using a mint gradient (`linear-gradient(to right, #059669, #10B981)`) to keep the overall palette clean. Typography stays in the existing family but shifts to dark green-blue neutrals (`#1F2937` body, `#064E3B` headings) for contrast; all blue/purple hues are explicitly removed.
+
+This architecture emphasizes reusable utility classes: `.glass-panel`, `.glass-card`, `.glass-input`, and `.accent-gradient` provide a consistent visual language across popup and overlay surfaces. The global scroll container remains at the App root to keep smooth scroll behavior while inner lists are full-bleed and de-shelled. Where `backdrop-filter` is unsupported, the semi-transparent backgrounds and borders still deliver the glass cue without breaking legibility.
+
+## Components, Data Flow, and Testing
+
+Popup layout applies `.glass-panel` to the root container, while list items, pills, and internal panels use `.glass-card` to preserve hierarchy without nested boxiness. The list view renders directly on the panel, and the editor view is the only element wrapped in an additional glass card for focus. Action elements (toggles, primary buttons, add button, FAB in overlay) exclusively carry `.accent-gradient` so the mint gradient reads as interactive affordance. The overlay panel and FAB follow the same tokenized surfaces, ensuring consistent interaction across extension UI layers. Data flow and state logic remain unchanged; only classnames and tokens determine theming, so behavior is stable while visuals update.
+
+Error handling is limited to visual fallbacks: if blur is unavailable, the alpha backgrounds and borders still present legible surfaces. Theming is verified by tests that assert required tokens and class usage, ensuring the green gradient, glass surfaces, and accent placement persist without reintroducing forbidden colors. Additional tests confirm global scrolling remains at the App container and that list/editor components stay scroll-agnostic.

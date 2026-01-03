@@ -14,4 +14,18 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  build: {
+    // Use relative paths for Chrome extension compatibility
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        // Ensure paths work in extension context
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+      },
+    },
+  },
+  // Critical: Use relative base path for Chrome extensions
+  base: './',
 })

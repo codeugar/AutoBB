@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AutoLink is a Chrome extension (Manifest V3) that auto-fills web forms with saved profile data. It detects form fields via heuristics and maps them to profile fields (name, email, description, etc.).
+AutoBB is a Chrome extension (Manifest V3) that auto-fills web forms with saved profile data. It detects form fields via heuristics and maps them to profile fields (name, email, description, etc.).
 
 ## Development Commands
 

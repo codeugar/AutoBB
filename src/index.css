@@ -990,3 +990,65 @@ html, body {
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-md);
 }
+
+/* Ripple effect styles */
+.ripple-parent {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background-color: rgba(16, 185, 129, 0.3);
+  transform: scale(0);
+  animation: ripple-animation 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes ripple-animation {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Copy button base styles */
+.copy-btn {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-normal) var(--ease-smooth);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.copy-btn:active {
+  transform: scale(0.95);
+}
+
+/* Image thumbnail styles */
+.img-thumbnail {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: grab;
+}
+
+.img-thumbnail:active {
+  cursor: grabbing;
+}
+
+.img-thumbnail:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-sm);
+}

@@ -19,7 +19,7 @@ export default defineManifest({
             '48': 'icon48.png',
         },
     },
-    permissions: ['storage', 'activeTab', 'scripting'],
+    permissions: ['storage', 'activeTab', 'scripting', 'clipboardWrite'],
     background: {
         service_worker: 'src/background/index.ts',
         type: 'module',

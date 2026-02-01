@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Profile } from '../../types';
+import type { Profile, Screenshot } from '../../types';
 import { ArrowLeft, Trash2, X, ChevronDown, Layout, Type, ListTree } from 'lucide-react';
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -49,6 +49,10 @@ const DesignerSelect = ({ options, ...props }: { options: { value: string; label
 );
 
 const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete }) => {
+    const MAX_LOGO_SIZE = 500 * 1024; // 500KB
+    const MAX_SCREENSHOT_SIZE = 1024 * 1024; // 1MB
+    const MAX_SCREENSHOTS = 5;
+    const MAX_TOTAL_STORAGE = 4 * 1024 * 1024; // 4MB (leave headroom)
     const [formData, setFormData] = useState<Profile>(profile || {
         id: generateId(),
         name: '',
@@ -63,6 +67,8 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
         pricing: '',
         customFields: {}
     });
+    const [logoPreview, setLogoPreview] = useState<string | undefined>(profile?.logoBase64);
+    const [screenshots, setScreenshots] = useState<Screenshot[]>(profile?.screenshots || []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -77,6 +83,75 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
 
     const addFeature = () => setFormData(prev => ({ ...prev, features: [...prev.features, ''] }));
     const removeFeature = (index: number) => setFormData(prev => ({ ...prev, features: formData.features.length > 1 ? formData.features.filter((_, i) => i !== index) : [''] }));
+
+    const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > MAX_LOGO_SIZE) {
+            alert(`Logo must be under ${Math.round(MAX_LOGO_SIZE / 1024)}KB`);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result as string;
+            setLogoPreview(base64);
+            setFormData(prev => ({ ...prev, logoBase64: base64 }));
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const calculateTotalSize = (): number => {
+        let total = 0;
+        if (formData.logoBase64) total += formData.logoBase64.length;
+        screenshots.forEach(s => {
+            if (s.base64) total += s.base64.length;
+        });
+        return total;
+    };
+
+    const handleScreenshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+
+        if (screenshots.length + files.length > MAX_SCREENSHOTS) {
+            alert(`Maximum ${MAX_SCREENSHOTS} screenshots allowed`);
+            return;
+        }
+
+        files.forEach(file => {
+            if (file.size > MAX_SCREENSHOT_SIZE) {
+                alert(`${file.name} exceeds ${MAX_SCREENSHOT_SIZE / 1024 / 1024}MB limit`);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = reader.result as string;
+                const newTotal = calculateTotalSize() + base64.length;
+                if (newTotal > MAX_TOTAL_STORAGE) {
+                    alert('Total image storage limit exceeded (4MB max)');
+                    return;
+                }
+
+                const newScreenshot: Screenshot = { base64 };
+                setScreenshots(prev => [...prev, newScreenshot]);
+                setFormData(prev => ({
+                    ...prev,
+                    screenshots: [...(prev.screenshots || []), newScreenshot]
+                }));
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const removeScreenshot = (index: number) => {
+        setScreenshots(prev => prev.filter((_, i) => i !== index));
+        setFormData(prev => ({
+            ...prev,
+            screenshots: (prev.screenshots || []).filter((_, i) => i !== index)
+        }));
+    };
 
     return (
         <div className="flex flex-col w-full animate-fade-in text-primary">
@@ -188,6 +263,73 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </section>
+
+                {/* Block: Images */}
+                <section className="space-y-8">
+                    <div className="flex items-center gap-4 text-accent">
+                        <Layout size={18} strokeWidth={3} />
+                        <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">Images</h2>
+                    </div>
+                    <div className="space-y-6">
+                        <FieldGroup label="Logo">
+                            <div className="flex items-center gap-4">
+                                {logoPreview && (
+                                    <img
+                                        src={logoPreview}
+                                        alt="Logo preview"
+                                        className="w-16 h-16 rounded-2xl object-cover border border-white/30 shadow-sm"
+                                    />
+                                )}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleLogoUpload}
+                                    className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-white/20 file:text-primary hover:file:bg-white/30"
+                                />
+                            </div>
+                            <DesignerInput
+                                type="url"
+                                name="logoUrl"
+                                value={formData.logoUrl || ''}
+                                onChange={handleChange}
+                                placeholder="Or paste logo URL"
+                            />
+                        </FieldGroup>
+
+                        <FieldGroup label={`Screenshots (max ${MAX_SCREENSHOTS})`}>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleScreenshotUpload}
+                                className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-white/20 file:text-primary hover:file:bg-white/30"
+                            />
+                            {screenshots.length > 0 && (
+                                <div className="flex flex-wrap gap-3">
+                                    {screenshots.map((shot, i) => (
+                                        <div key={i} className="relative group">
+                                            {shot.base64 && (
+                                                <img
+                                                    src={shot.base64}
+                                                    alt={`Screenshot ${i + 1}`}
+                                                    className="w-20 h-20 rounded-2xl object-cover border border-white/30"
+                                                />
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => removeScreenshot(i)}
+                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                                aria-label={`Remove screenshot ${i + 1}`}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </FieldGroup>
                     </div>
                 </section>
             </div>

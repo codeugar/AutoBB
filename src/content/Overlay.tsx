@@ -6,6 +6,7 @@ import type { DetectedField } from './matcher';
 import { domUtils } from './dom';
 import { Play, X, Zap, CheckCircle, AlertCircle, ChevronDown, MonitorOff } from 'lucide-react';
 import { clampPosition, defaultPosition, snapPositionToEdge, type Point, type Size } from './overlayPosition';
+import { ProfileFieldsSection } from './components/ProfileFieldsSection';
 
 const EDGE_PADDING = 12;
 const POSITION_STORAGE_KEY = 'overlay_position';
@@ -322,7 +323,7 @@ const Overlay: React.FC = () => {
             </div>
 
             {/* Content */}
-            <div className="p-4 flex flex-col gap-4">
+            <div className="p-4 flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
                 {/* Profile Selector */}
                 <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-muted uppercase tracking-wider">
@@ -348,6 +349,10 @@ const Overlay: React.FC = () => {
                         />
                     </div>
                 </div>
+
+                {activeProfile && (
+                    <ProfileFieldsSection profile={activeProfile} />
+                )}
 
                 {/* Stats Card */}
                 <div className="p-3 glass-card rounded-xl">

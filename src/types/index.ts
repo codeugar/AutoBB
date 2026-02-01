@@ -1,3 +1,8 @@
+export interface Screenshot {
+    base64?: string;
+    url?: string;
+}
+
 export interface Profile {
     id: string;
     name: string;
@@ -11,6 +16,9 @@ export interface Profile {
     tags: string[];
     pricing: string;
     customFields: Record<string, string>;
+    logoBase64?: string;
+    logoUrl?: string;
+    screenshots?: Screenshot[];
 }
 
 export interface FieldMapping {

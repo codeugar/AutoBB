@@ -11,6 +11,9 @@
 | Medium | 拖拽缺少错误处理 | 添加 try-catch + 用户提示 |
 | Medium | Screenshot 数组索引错配 | 改用统一数据模型 `Screenshot { base64?, url? }` |
 | Medium | Task 10 过大 | 拆分为 4 个原子任务 |
+| High | package.json 无 test 脚本 | 添加 vitest 配置和 test 脚本 |
+| Medium | clipboard.ts 缺少 base64ToBlob/base64ToFile | 补全函数定义 |
+| Medium | ImageItem 缺少 dragError 状态 | 添加 useState 和错误提示 UI |
 
 ---
 
@@ -84,6 +87,29 @@ export interface Profile {
 
 ```typescript
 // clipboard.ts
+
+/**
+ * Convert base64 string to Blob for clipboard operations
+ */
+export function base64ToBlob(base64: string): Blob {
+    const [meta, data] = base64.split(',');
+    const mime = meta.match(/:(.*?);/)?.[1] || 'image/png';
+    const binary = atob(data);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        array[i] = binary.charCodeAt(i);
+    }
+    return new Blob([array], { type: mime });
+}
+
+/**
+ * Create a File object from base64 for drag operations
+ */
+export function base64ToFile(base64: string, filename: string = 'image.png'): File {
+    const blob = base64ToBlob(base64);
+    return new File([blob], filename, { type: blob.type });
+}
+
 export function isClipboardSupported(): boolean {
     return !!(navigator.clipboard && navigator.clipboard.writeText);
 }
@@ -170,25 +196,77 @@ describe('clipboard utils', () => {
 
 **关键改进 - 拖拽错误处理：**
 ```typescript
-const handleDragStart = async (e: React.DragEvent) => {
-    if (!base64) return;
+import React, { useState } from 'react';
+import { Copy, Link, Check, AlertCircle } from 'lucide-react';
+import useRipple from '@tracksuitdev/use-ripple';
+import { copyImage, copyText, base64ToFile } from '../utils/clipboard';
 
-    try {
-        const file = base64ToFile(base64, `${label.toLowerCase()}.png`);
-        e.dataTransfer.items.add(file);
-        e.dataTransfer.effectAllowed = 'copy';
+interface ImageItemProps {
+    label: string;
+    base64?: string;
+    url?: string;
+}
 
-        // 同时复制到剪贴板作为备用
-        const result = await copyImage(base64);
-        if (!result.success) {
-            console.warn('Clipboard fallback failed:', result.error);
+export const ImageItem: React.FC<ImageItemProps> = ({ label, base64, url }) => {
+    const [copiedImg, setCopiedImg] = useState(false);
+    const [copiedUrl, setCopiedUrl] = useState(false);
+    const [dragError, setDragError] = useState<string | null>(null);  // 错误状态
+    const { styles: imgStyles, onClick: imgRipple } = useRipple({ duration: 400 });
+    const { styles: urlStyles, onClick: urlRipple } = useRipple({ duration: 400 });
+
+    const handleDragStart = async (e: React.DragEvent) => {
+        if (!base64) return;
+
+        try {
+            const file = base64ToFile(base64, `${label.toLowerCase()}.png`);
+            e.dataTransfer.items.add(file);
+            e.dataTransfer.effectAllowed = 'copy';
+
+            // 同时复制到剪贴板作为备用
+            const result = await copyImage(base64);
+            if (!result.success) {
+                console.warn('Clipboard fallback failed:', result.error);
+            }
+        } catch (err) {
+            console.error('Drag start failed:', err);
+            // 拖拽失败时提示用户使用复制按钮
+            setDragError('Drag failed, please use copy button');
+            setTimeout(() => setDragError(null), 3000);
         }
-    } catch (err) {
-        console.error('Drag start failed:', err);
-        // 拖拽失败时提示用户使用复制按钮
-        setDragError('Drag failed, please use copy button');
-        setTimeout(() => setDragError(null), 3000);
-    }
+    };
+
+    // ... 其他 handlers (handleCopyImage, handleCopyUrl) ...
+
+    const imageSrc = base64 || url;
+    if (!imageSrc) return null;
+
+    return (
+        <div className="flex flex-col gap-1 py-1.5">
+            <div className="flex items-center gap-2">
+                <span className="text-[10px] text-muted uppercase tracking-wider w-20">
+                    {label}
+                </span>
+                <img
+                    src={imageSrc}
+                    alt={label}
+                    className="img-thumbnail"
+                    draggable={!!base64}
+                    onDragStart={handleDragStart}
+                    title={base64 ? 'Drag to upload or use buttons' : 'Image preview'}
+                />
+                <div className="flex gap-1">
+                    {/* Copy buttons... */}
+                </div>
+            </div>
+            {/* 错误提示 UI */}
+            {dragError && (
+                <div className="flex items-center gap-1 text-[10px] text-red-400 ml-20">
+                    <AlertCircle size={10} />
+                    {dragError}
+                </div>
+            )}
+        </div>
+    );
 };
 ```
 
@@ -378,12 +456,39 @@ const handleScreenshotUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 
 ---
 
-### Task 11: 安装依赖 + 运行测试
-**时间:** 3 分钟
+### Task 11: 安装依赖 + 配置测试 + 运行测试
+**时间:** 5 分钟
 
+**Step 1: 安装依赖**
 ```bash
 npm install @tracksuitdev/use-ripple
-npm install -D vitest @testing-library/react
+npm install -D vitest @testing-library/react jsdom
+```
+
+**Step 2: 添加 vitest 配置**
+
+创建 `vitest.config.ts`:
+```typescript
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+    test: {
+        environment: 'jsdom',
+        include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    },
+});
+```
+
+**Step 3: 添加 test 脚本到 package.json**
+
+在 `package.json` 的 `scripts` 中添加:
+```json
+"test": "vitest run",
+"test:watch": "vitest"
+```
+
+**Step 4: 运行测试**
+```bash
 npm run test
 npm run build
 ```
@@ -413,6 +518,8 @@ npm run build
 | `src/types/index.ts` | 修改 - 添加 Screenshot 类型和图片字段 |
 | `src/content/utils/clipboard.ts` | 新建 - 剪贴板工具函数 |
 | `src/content/utils/clipboard.test.ts` | 新建 - 单元测试 |
+| `vitest.config.ts` | 新建 - Vitest 配置 |
+| `package.json` | 修改 - 添加 test 脚本 |
 | `src/content/index.css` | 修改 - 添加 ripple 样式 |
 | `src/content/components/CopyableField.tsx` | 新建 |
 | `src/content/components/ImageItem.tsx` | 新建 |

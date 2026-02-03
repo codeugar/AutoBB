@@ -19,6 +19,7 @@ export interface Profile {
     logoBase64?: string;
     logoUrl?: string;
     screenshots?: Screenshot[];
+    userCases?: string[];
 }
 
 export interface FieldMapping {

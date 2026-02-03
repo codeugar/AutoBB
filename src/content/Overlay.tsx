@@ -7,6 +7,8 @@ import { domUtils } from './dom';
 import { Play, X, Zap, CheckCircle, AlertCircle, ChevronDown, MonitorOff } from 'lucide-react';
 import { clampPosition, defaultPosition, snapPositionToEdge, type Point, type Size } from './overlayPosition';
 import { ProfileFieldsSection } from './components/ProfileFieldsSection';
+import { getActiveDragFile, setActiveDragFile } from './utils/dragState';
+import { findNearestFileInput, setFileInput } from './utils/fileInput';
 
 const EDGE_PADDING = 12;
 const POSITION_STORAGE_KEY = 'overlay_position';
@@ -94,6 +96,52 @@ const Overlay: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        const isInsideOverlay = (target: EventTarget | null) => {
+            if (!(target instanceof Element)) return false;
+            const root = target.getRootNode();
+            return root instanceof ShadowRoot && (root.host as HTMLElement)?.id === 'autolink-extension-root';
+        };
+
+        const handleDragOver = (event: DragEvent) => {
+            const file = getActiveDragFile();
+            if (!file) return;
+            if (isInsideOverlay(event.target)) return;
+            const input = findNearestFileInput(event.target as Element | null);
+            if (!input) return;
+            event.preventDefault();
+            if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+        };
+
+        const handleDrop = (event: DragEvent) => {
+            const file = getActiveDragFile();
+            if (!file) return;
+            if (isInsideOverlay(event.target)) return;
+            const input = findNearestFileInput(event.target as Element | null);
+            if (!input) return;
+            event.preventDefault();
+            event.stopPropagation();
+            try {
+                setFileInput(input, file);
+            } finally {
+                setActiveDragFile(null);
+            }
+        };
+
+        const handleDragEnd = () => {
+            setActiveDragFile(null);
+        };
+
+        document.addEventListener('dragover', handleDragOver, true);
+        document.addEventListener('drop', handleDrop, true);
+        document.addEventListener('dragend', handleDragEnd, true);
+        return () => {
+            document.removeEventListener('dragover', handleDragOver, true);
+            document.removeEventListener('drop', handleDrop, true);
+            document.removeEventListener('dragend', handleDragEnd, true);
+        };
+    }, []);
+
+    useEffect(() => {
         const loadPosition = async () => {
             try {
                 const result = await chrome.storage.local.get(POSITION_STORAGE_KEY);
@@ -169,6 +217,8 @@ const Overlay: React.FC = () => {
             if (key.startsWith('features.')) {
                 const idx = parseInt(key.split('.')[1]);
                 value = profile.features[idx] || '';
+            } else if (key === 'userCases') {
+                value = (profile.userCases ?? []).join('\n');
             } else if (key in profile) {
                 // @ts-ignore
                 value = (profile[key] as string) || '';

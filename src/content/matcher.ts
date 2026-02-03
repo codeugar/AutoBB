@@ -15,6 +15,7 @@ const KEYWORDS: Record<string, string[]> = {
     longDescription: ['description', 'detail', 'about', 'story', 'readme', 'full_description', 'bio'],
     pricing: ['pricing', 'price', 'cost', 'model', 'plan'],
     features: ['feature', 'highlight', 'capability', 'function'],
+    userCases: ['user case', 'use case', 'usecase', 'scenario', 'workflow'],
     tags: ['tag', 'keyword', 'label'],
     email: ['email', 'mail', 'contact'],
 };

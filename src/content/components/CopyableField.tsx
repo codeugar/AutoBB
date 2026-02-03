@@ -24,8 +24,7 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
         ? `${value.slice(0, maxLength)}...`
         : value;
 
-    const handleCopy = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        rippleClick(e);
+    const performCopy = async () => {
         setError(null);
         const result = await copyText(value);
         if (result.success) {
@@ -37,9 +36,25 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
         }
     };
 
+    const handleCopy = async (e: React.MouseEvent<HTMLElement>) => {
+        rippleClick(e);
+        await performCopy();
+    };
+
     return (
         <div className="flex flex-col gap-1 py-1.5">
-            <div className="flex items-start justify-between gap-2">
+            <div
+                className="flex items-start justify-between gap-2 ripple-parent cursor-pointer rounded-lg px-1 py-1"
+                role="button"
+                tabIndex={0}
+                onClick={(e) => handleCopy(e as React.MouseEvent<HTMLElement>)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        void performCopy();
+                    }
+                }}
+            >
                 <div className="flex-1 min-w-0">
                     <span className="text-[10px] text-muted uppercase tracking-wider block">
                         {label}
@@ -52,7 +67,10 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
                     </span>
                 </div>
                 <button
-                    onClick={handleCopy}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        void performCopy();
+                    }}
                     className="copy-btn ripple-parent flex items-center gap-1"
                     title={copied ? 'Copied!' : `Copy ${label}`}
                 >
@@ -61,10 +79,10 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
                     ) : (
                         <Copy size={12} />
                     )}
-                    {styles.map((style, i) => (
-                        <span key={i} className="ripple" style={style} />
-                    ))}
                 </button>
+                {styles.map((style, i) => (
+                    <span key={i} className="ripple" style={style} />
+                ))}
             </div>
             {error && (
                 <div className="flex items-center gap-1 text-[10px] text-red-400">

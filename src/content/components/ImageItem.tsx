@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Copy, Link, Check, AlertCircle } from 'lucide-react';
 import { copyImage, copyText, base64ToFile } from '../utils/clipboard';
+import { setActiveDragFile } from '../utils/dragState';
 import { useRippleEffect } from '../hooks/useRippleEffect';
 
 interface ImageItemProps {
@@ -49,15 +50,33 @@ export const ImageItem: React.FC<ImageItemProps> = ({ label, base64, url }) => {
         if (!base64) return;
 
         try {
-            const file = base64ToFile(base64, `${label.toLowerCase()}.png`);
+            const mimeMatch = base64.match(/^data:(.*?);base64,/);
+            const mime = mimeMatch?.[1] || 'image/png';
+            const extension = mime === 'image/jpeg' ? 'jpg' : mime === 'image/webp' ? 'webp' : 'png';
+            const safeLabel = label.toLowerCase().replace(/\s+/g, '-');
+            const filename = `${safeLabel}.${extension}`;
+            const file = base64ToFile(base64, filename);
+            setActiveDragFile(file);
+
+            const blobUrl = URL.createObjectURL(file);
+
+            e.dataTransfer.clearData();
+            e.dataTransfer.setData('text/plain', url ?? label);
+            e.dataTransfer.setData('text/uri-list', url ?? blobUrl);
+            e.dataTransfer.setData('DownloadURL', `${mime}:${filename}:${blobUrl}`);
             e.dataTransfer.items.add(file);
             e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.dropEffect = 'copy';
 
             // Also copy to clipboard as fallback
             const result = await copyImage(base64);
             if (!result.success) {
                 console.warn('Clipboard fallback failed:', result.error);
             }
+
+            setTimeout(() => {
+                URL.revokeObjectURL(blobUrl);
+            }, 30000);
         } catch (err) {
             console.error('Drag start failed:', err);
             setDragError('Drag failed, please use copy button');
@@ -80,6 +99,7 @@ export const ImageItem: React.FC<ImageItemProps> = ({ label, base64, url }) => {
                     className="img-thumbnail"
                     draggable={!!base64}
                     onDragStart={handleDragStart}
+                    onDragEnd={() => setActiveDragFile(null)}
                     title={base64 ? 'Drag to upload or use buttons' : 'Image preview'}
                 />
                 <div className="flex gap-1">

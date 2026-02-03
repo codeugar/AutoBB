@@ -48,10 +48,57 @@ export async function copyImage(base64: string): Promise<{ success: boolean; err
         if (!navigator.clipboard?.write) {
             return { success: false, error: 'Image copy not supported in this browser' };
         }
-        const blob = base64ToBlob(base64);
-        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        const blob = await ensurePngBlob(base64);
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         return { success: true };
     } catch (e) {
         return { success: false, error: e instanceof Error ? e.message : 'Image copy failed' };
     }
+}
+
+async function ensurePngBlob(base64: string): Promise<Blob> {
+    const blob = base64ToBlob(base64);
+    if (blob.type === 'image/png') return blob;
+    return await convertBlobToPng(blob);
+}
+
+async function convertBlobToPng(blob: Blob): Promise<Blob> {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas not supported');
+
+    if ('createImageBitmap' in window) {
+        const bitmap = await createImageBitmap(blob);
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        ctx.drawImage(bitmap, 0, 0);
+    } else {
+        const img = await blobToImage(blob);
+        canvas.width = img.naturalWidth || img.width;
+        canvas.height = img.naturalHeight || img.height;
+        ctx.drawImage(img, 0, 0);
+    }
+
+    return await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((png) => {
+            if (png) resolve(png);
+            else reject(new Error('PNG conversion failed'));
+        }, 'image/png');
+    });
+}
+
+function blobToImage(blob: Blob): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            resolve(img);
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Image decode failed'));
+        };
+        img.src = url;
+    });
 }

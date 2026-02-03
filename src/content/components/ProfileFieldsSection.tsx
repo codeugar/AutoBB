@@ -9,6 +9,7 @@ interface ProfileFieldsSectionProps {
 }
 
 export const ProfileFieldsSection: React.FC<ProfileFieldsSectionProps> = ({ profile }) => {
+    const userCases = profile.userCases ?? [];
     const hasImages = Boolean(
         profile.logoBase64 ||
         profile.logoUrl ||
@@ -33,6 +34,17 @@ export const ProfileFieldsSection: React.FC<ProfileFieldsSectionProps> = ({ prof
                     {profile.tags.length > 0 && (
                         <CopyableField label="Tags" value={profile.tags.join(', ')} />
                     )}
+                    {userCases.length > 0 && (
+                        <CopyableField label="User Cases (All)" value={userCases.join('\n')} maxLength={240} />
+                    )}
+                    {userCases.map((userCase, i) => (
+                        <CopyableField
+                            key={`user-case-${i}`}
+                            label={`User Case ${i + 1}`}
+                            value={userCase}
+                            maxLength={200}
+                        />
+                    ))}
                     {profile.features
                         .filter((feature) => feature.trim())
                         .map((feature, i) => (

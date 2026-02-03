@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { Profile, Screenshot } from '../../types';
 import { ArrowLeft, Trash2, X, ChevronDown, Layout, Type, ListTree } from 'lucide-react';
+import { parseUserCases } from '../utils/userCases';
 
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -65,7 +66,8 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
         features: [''],
         tags: [],
         pricing: '',
-        customFields: {}
+        customFields: {},
+        userCases: []
     });
     const [logoPreview, setLogoPreview] = useState<string | undefined>(profile?.logoBase64);
     const [screenshots, setScreenshots] = useState<Screenshot[]>(profile?.screenshots || []);
@@ -79,6 +81,18 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
         const newFeatures = [...formData.features];
         newFeatures[index] = value;
         setFormData(prev => ({ ...prev, features: newFeatures }));
+    };
+
+    const [userCasesText, setUserCasesText] = useState<string>(
+        (profile?.userCases ?? []).join('\n')
+    );
+
+    const handleUserCasesChange = (value: string) => {
+        const lines = value.split('\n');
+        const limitedText = lines.slice(0, 5).join('\n');
+        setUserCasesText(limitedText);
+        const parsed = parseUserCases(limitedText);
+        setFormData(prev => ({ ...prev, userCases: parsed }));
     };
 
     const addFeature = () => setFormData(prev => ({ ...prev, features: [...prev.features, ''] }));
@@ -152,6 +166,8 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
             screenshots: (prev.screenshots || []).filter((_, i) => i !== index)
         }));
     };
+
+    const userCasesCount = formData.userCases?.length ?? 0;
 
     return (
         <div className="flex flex-col w-full animate-fade-in text-primary">
@@ -263,6 +279,30 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </section>
+
+                {/* Block: User Cases */}
+                <section className="space-y-8">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-accent">
+                            <ListTree size={18} strokeWidth={3} />
+                            <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">User Cases</h2>
+                        </div>
+                        <span className="text-[10px] text-muted font-black uppercase tracking-[0.3em]">
+                            {userCasesCount}/5
+                        </span>
+                    </div>
+                    <div className="space-y-6">
+                        <FieldGroup label="User Cases (one per line, max 5)">
+                            <DesignerTextArea
+                                name="userCases"
+                                rows={5}
+                                value={userCasesText}
+                                onChange={(e) => handleUserCasesChange(e.target.value)}
+                                placeholder="Describe up to five user cases, each on a new line"
+                            />
+                        </FieldGroup>
                     </div>
                 </section>
 

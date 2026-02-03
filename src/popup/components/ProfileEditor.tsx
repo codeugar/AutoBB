@@ -228,6 +228,9 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                         <FieldGroup label="Official Website">
                             <DesignerInput type="url" name="domain" value={formData.domain} onChange={handleChange} placeholder="https://your-product.com" />
                         </FieldGroup>
+                        <FieldGroup label="Contact Email">
+                            <DesignerInput type="email" name="email" value={formData.email} onChange={handleChange} placeholder="hello@your-product.com" />
+                        </FieldGroup>
                     </div>
                 </section>
 

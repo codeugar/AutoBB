@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "icons": "node scripts/generate-icons.mjs",
-    "pack": "npm run build && cd dist && zip -r ../autobb-v1.0.0.zip . -x '*.map' -x '.vite/*' -x 'vite.svg'",
+    "pack": "npm run build && cd dist && zip -r ../autobb-v1.0.1.zip . -x '*.map' -x '.vite/*' -x 'vite.svg'",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -43,9 +43,6 @@ const ControlCard = ({ icon: Icon, label, enabled, onToggle }: { icon: any; labe
                 <span className={`text-[13px] font-semibold tracking-tight ${enabled ? 'text-heading' : 'text-muted'}`}>
                     {label}
                 </span>
-                <span className="text-[11px] text-muted font-medium uppercase tracking-[0.1em] mt-0.5">
-                    {enabled ? 'Active' : 'Disabled'}
-                </span>
             </div>
         </div>
         <ToggleSwitch enabled={enabled} onToggle={onToggle} />
@@ -170,24 +167,22 @@ const App = () => {
                             onCreate={() => { setEditingProfile(null); setCurrentView('editor'); }}
                         />
                     ) : (
-                        <div className="glass-card flex flex-col relative rounded-[32px]">
-                            <ProfileEditor
-                                profile={editingProfile}
-                                onSave={async (p) => {
-                                    await storage.saveProfile(p);
-                                    const updated = await storage.getProfiles();
-                                    setProfiles(updated);
-                                    setCurrentView('list');
-                                }}
-                                onCancel={() => setCurrentView('list')}
-                                onDelete={async (id) => {
-                                    await storage.deleteProfile(id);
-                                    const updated = await storage.getProfiles();
-                                    setProfiles(updated);
-                                    setCurrentView('list');
-                                }}
-                            />
-                        </div>
+                        <ProfileEditor
+                            profile={editingProfile}
+                            onSave={async (p) => {
+                                await storage.saveProfile(p);
+                                const updated = await storage.getProfiles();
+                                setProfiles(updated);
+                                setCurrentView('list');
+                            }}
+                            onCancel={() => setCurrentView('list')}
+                            onDelete={async (id) => {
+                                await storage.deleteProfile(id);
+                                const updated = await storage.getProfiles();
+                                setProfiles(updated);
+                                setCurrentView('list');
+                            }}
+                        />
                     )}
                 </main>
 

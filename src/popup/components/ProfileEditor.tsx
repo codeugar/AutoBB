@@ -190,7 +190,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 </div>
                 <div className="flex items-center gap-3">
                     {profile && (
-                        <button onClick={() => onDelete(profile.id)} aria-label="Delete profile" className="w-12 h-12 flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all">
+                        <button onClick={() => onDelete(profile.id)} aria-label="Delete profile" className="w-12 h-12 flex items-center justify-center text-muted hover:text-[var(--color-error-text)] hover:bg-[var(--color-error-bg)] rounded-2xl transition-all">
                             <Trash2 size={20} />
                         </button>
                     )}
@@ -281,7 +281,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                         aria-label={`Feature ${idx + 1}`}
                                     />
                                     {formData.features.length > 1 && (
-                                        <button onClick={() => removeFeature(idx)} aria-label={`Remove feature ${idx + 1}`} className="absolute right-6 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 text-muted hover:text-red-500 transition-all">
+                                        <button onClick={() => removeFeature(idx)} aria-label={`Remove feature ${idx + 1}`} className="absolute right-6 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 text-muted hover:text-[var(--color-error-text)] transition-all">
                                             <X size={20} />
                                         </button>
                                     )}
@@ -341,7 +341,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                 />
                             </div>
                             {logoError && (
-                                <p role="alert" className="text-xs text-red-500 px-2 mt-1">{logoError}</p>
+                                <p role="alert" className="text-xs text-[var(--color-error-text)] px-2 mt-1">{logoError}</p>
                             )}
                             <DesignerInput
                                 id="field-logo-url"
@@ -363,7 +363,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                 className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-white/20 file:text-primary hover:file:bg-white/30"
                             />
                             {screenshotError && (
-                                <p role="alert" className="text-xs text-red-500 px-2 mt-1">{screenshotError}</p>
+                                <p role="alert" className="text-xs text-[var(--color-error-text)] px-2 mt-1">{screenshotError}</p>
                             )}
                             {screenshots.length > 0 && (
                                 <div className="flex flex-wrap gap-3">
@@ -379,7 +379,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                             <button
                                                 type="button"
                                                 onClick={() => removeScreenshot(i)}
-                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                                className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--color-error)] rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                                                 aria-label={`Remove screenshot ${i + 1}`}
                                             >
                                                 ×

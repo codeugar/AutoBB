@@ -10,6 +10,8 @@ const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () =>
     return (
         <button
             onClick={(e) => { e.stopPropagation(); onToggle(); }}
+            aria-hidden="true"
+            tabIndex={-1}
             className={`
                 relative w-11 h-6 rounded-full transition-all duration-500 flex-shrink-0 border border-white/40
                 ${enabled ? 'accent-gradient shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'bg-white/40'}
@@ -26,7 +28,11 @@ const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () =>
 
 const ControlCard = ({ icon: Icon, label, enabled, onToggle }: { icon: any; label: string; enabled: boolean; onToggle: () => void }) => (
     <div
+        role="button"
+        tabIndex={0}
+        aria-pressed={enabled}
         onClick={onToggle}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
         className="flex items-center justify-between p-4 glass-card hover:bg-white/55 hover:border-white/60 transition-all cursor-pointer group"
     >
         <div className="flex items-center gap-4">
@@ -188,13 +194,23 @@ const App = () => {
                 {/* Premium Footer */}
                 <footer className="px-10 py-5 flex items-center justify-between bg-white/45 border-t border-white/50 relative z-20">
                     <div className="flex gap-8">
-                        <button className="text-muted hover:text-heading flex items-center gap-2.5 transition-all group">
+                        <button
+                            disabled
+                            aria-disabled="true"
+                            title="Coming soon"
+                            className="text-muted flex items-center gap-2.5 transition-all group opacity-50 cursor-not-allowed"
+                        >
                             <Settings size={18} className="group-hover:rotate-45 transition-transform" />
-                            <span className="text-[11px] font-black uppercase tracking-widest text-muted group-hover:text-heading">Settings</span>
+                            <span className="text-[11px] font-black uppercase tracking-widest text-muted">Settings</span>
                         </button>
-                        <button className="text-muted hover:text-heading flex items-center gap-2.5 transition-all group">
+                        <button
+                            disabled
+                            aria-disabled="true"
+                            title="Coming soon"
+                            className="text-muted flex items-center gap-2.5 transition-all group opacity-50 cursor-not-allowed"
+                        >
                             <LifeBuoy size={18} />
-                            <span className="text-[11px] font-black uppercase tracking-widest text-muted group-hover:text-heading">Support</span>
+                            <span className="text-[11px] font-black uppercase tracking-widest text-muted">Support</span>
                         </button>
                     </div>
                 </footer>

@@ -12,9 +12,9 @@ interface Props {
     onDelete: (id: string) => void;
 }
 
-const FieldGroup = ({ label, children }: { label: string; children: React.ReactNode }) => (
+const FieldGroup = ({ label, forId, children }: { label: string; forId?: string; children: React.ReactNode }) => (
     <div className="space-y-4">
-        <label className="text-[11px] font-black uppercase tracking-[0.3em] text-muted block px-2">{label}</label>
+        <label htmlFor={forId} className="text-[11px] font-black uppercase tracking-[0.3em] text-muted block px-2">{label}</label>
         {children}
     </div>
 );
@@ -71,6 +71,8 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
     });
     const [logoPreview, setLogoPreview] = useState<string | undefined>(profile?.logoBase64);
     const [screenshots, setScreenshots] = useState<Screenshot[]>(profile?.screenshots || []);
+    const [logoError, setLogoError] = useState<string | null>(null);
+    const [screenshotError, setScreenshotError] = useState<string | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -103,10 +105,11 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
         if (!file) return;
 
         if (file.size > MAX_LOGO_SIZE) {
-            alert(`Logo must be under ${Math.round(MAX_LOGO_SIZE / 1024)}KB`);
+            setLogoError(`Logo must be under ${Math.round(MAX_LOGO_SIZE / 1024)}KB`);
             return;
         }
 
+        setLogoError(null);
         const reader = new FileReader();
         reader.onload = () => {
             const base64 = reader.result as string;
@@ -129,13 +132,13 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
         const files = Array.from(e.target.files || []);
 
         if (screenshots.length + files.length > MAX_SCREENSHOTS) {
-            alert(`Maximum ${MAX_SCREENSHOTS} screenshots allowed`);
+            setScreenshotError(`Maximum ${MAX_SCREENSHOTS} screenshots allowed`);
             return;
         }
 
         files.forEach(file => {
             if (file.size > MAX_SCREENSHOT_SIZE) {
-                alert(`${file.name} exceeds ${MAX_SCREENSHOT_SIZE / 1024 / 1024}MB limit`);
+                setScreenshotError(`${file.name} exceeds ${MAX_SCREENSHOT_SIZE / 1024 / 1024}MB limit`);
                 return;
             }
 
@@ -144,10 +147,11 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 const base64 = reader.result as string;
                 const newTotal = calculateTotalSize() + base64.length;
                 if (newTotal > MAX_TOTAL_STORAGE) {
-                    alert('Total image storage limit exceeded (4MB max)');
+                    setScreenshotError('Total image storage limit exceeded (4MB max)');
                     return;
                 }
 
+                setScreenshotError(null);
                 const newScreenshot: Screenshot = { base64 };
                 setScreenshots(prev => [...prev, newScreenshot]);
                 setFormData(prev => ({
@@ -174,7 +178,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
             {/* Elegant Fixed Header */}
             <div className="flex-shrink-0 px-8 py-8 flex items-center justify-between border-b border-white/50 bg-white/60 backdrop-blur-xl z-20 rounded-t-[32px]">
                 <div className="flex items-center gap-5">
-                    <button onClick={onCancel} className="w-12 h-12 flex items-center justify-center glass-card text-muted hover:text-heading rounded-2xl transition-all border border-white/50 hover:scale-105 active:scale-90">
+                    <button onClick={onCancel} aria-label="Go back" className="w-12 h-12 flex items-center justify-center glass-card text-muted hover:text-heading rounded-2xl transition-all border border-white/50 hover:scale-105 active:scale-90">
                         <ArrowLeft size={22} />
                     </button>
                     <div>
@@ -186,7 +190,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 </div>
                 <div className="flex items-center gap-3">
                     {profile && (
-                        <button onClick={() => onDelete(profile.id)} className="w-12 h-12 flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all">
+                        <button onClick={() => onDelete(profile.id)} aria-label="Delete profile" className="w-12 h-12 flex items-center justify-center text-muted hover:text-red-500 hover:bg-red-500/10 rounded-2xl transition-all">
                             <Trash2 size={20} />
                         </button>
                     )}
@@ -209,15 +213,15 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                         <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">Identity</h2>
                     </div>
                     <div className="space-y-6">
-                        <FieldGroup label="Product Name">
-                            <DesignerInput name="name" value={formData.name} onChange={handleChange} placeholder="The name of your tool" required />
+                        <FieldGroup label="Product Name" forId="field-name">
+                            <DesignerInput id="field-name" name="name" value={formData.name} onChange={handleChange} placeholder="The name of your tool" required />
                         </FieldGroup>
                         <div className="grid grid-cols-1 gap-6">
-                            <FieldGroup label="Category">
-                                <DesignerInput name="category" value={formData.category} onChange={handleChange} placeholder="e.g. Artificial Intelligence" />
+                            <FieldGroup label="Category" forId="field-category">
+                                <DesignerInput id="field-category" name="category" value={formData.category} onChange={handleChange} placeholder="e.g. Artificial Intelligence" />
                             </FieldGroup>
-                            <FieldGroup label="Pricing Model">
-                                <DesignerSelect name="pricing" value={formData.pricing} onChange={handleChange} options={[
+                            <FieldGroup label="Pricing Model" forId="field-pricing">
+                                <DesignerSelect id="field-pricing" name="pricing" value={formData.pricing} onChange={handleChange} options={[
                                     { value: '', label: 'Select status...' },
                                     { value: 'Free', label: 'Free to use' },
                                     { value: 'Freemium', label: 'Freemium model' },
@@ -225,11 +229,11 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                 ]} />
                             </FieldGroup>
                         </div>
-                        <FieldGroup label="Official Website">
-                            <DesignerInput type="url" name="domain" value={formData.domain} onChange={handleChange} placeholder="https://your-product.com" />
+                        <FieldGroup label="Official Website" forId="field-domain">
+                            <DesignerInput id="field-domain" type="url" name="domain" value={formData.domain} onChange={handleChange} placeholder="https://your-product.com" />
                         </FieldGroup>
-                        <FieldGroup label="Contact Email">
-                            <DesignerInput type="email" name="email" value={formData.email} onChange={handleChange} placeholder="hello@your-product.com" />
+                        <FieldGroup label="Contact Email" forId="field-email">
+                            <DesignerInput id="field-email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="hello@your-product.com" />
                         </FieldGroup>
                     </div>
                 </section>
@@ -241,14 +245,14 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                         <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">Marketing</h2>
                     </div>
                     <div className="space-y-6">
-                        <FieldGroup label="Short Tagline">
-                            <DesignerInput name="title" value={formData.title} onChange={handleChange} placeholder="Hook your audience" />
+                        <FieldGroup label="Short Tagline" forId="field-title">
+                            <DesignerInput id="field-title" name="title" value={formData.title} onChange={handleChange} placeholder="Hook your audience" />
                         </FieldGroup>
-                        <FieldGroup label="Elevator Pitch">
-                            <DesignerTextArea name="shortDescription" value={formData.shortDescription} onChange={handleChange} rows={2} placeholder="One sentence summary" />
+                        <FieldGroup label="Elevator Pitch" forId="field-short-desc">
+                            <DesignerTextArea id="field-short-desc" name="shortDescription" value={formData.shortDescription} onChange={handleChange} rows={2} placeholder="One sentence summary" />
                         </FieldGroup>
-                        <FieldGroup label="Full Product Bio">
-                            <DesignerTextArea name="longDescription" value={formData.longDescription} onChange={handleChange} rows={6} placeholder="The full story of your product" />
+                        <FieldGroup label="Full Product Bio" forId="field-long-desc">
+                            <DesignerTextArea id="field-long-desc" name="longDescription" value={formData.longDescription} onChange={handleChange} rows={6} placeholder="The full story of your product" />
                         </FieldGroup>
                     </div>
                 </section>
@@ -269,13 +273,15 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                             <div key={idx} className="group flex gap-4 items-center animate-slide-up" style={{ animationDelay: `${idx * 100}ms` }}>
                                 <div className="flex-1 relative">
                                     <DesignerInput
+                                        id={`field-feature-${idx}`}
                                         type="text"
                                         value={feature}
                                         onChange={(e) => handleFeatureChange(idx, e.target.value)}
                                         placeholder={`Core capability 0${idx + 1}`}
+                                        aria-label={`Feature ${idx + 1}`}
                                     />
                                     {formData.features.length > 1 && (
-                                        <button onClick={() => removeFeature(idx)} className="absolute right-6 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 text-muted hover:text-red-500 transition-all">
+                                        <button onClick={() => removeFeature(idx)} aria-label={`Remove feature ${idx + 1}`} className="absolute right-6 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 text-muted hover:text-red-500 transition-all">
                                             <X size={20} />
                                         </button>
                                     )}
@@ -297,8 +303,9 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                         </span>
                     </div>
                     <div className="space-y-6">
-                        <FieldGroup label="User Cases (one per line, max 5)">
+                        <FieldGroup label="User Cases (one per line, max 5)" forId="field-user-cases">
                             <DesignerTextArea
+                                id="field-user-cases"
                                 name="userCases"
                                 rows={5}
                                 value={userCasesText}
@@ -316,7 +323,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                         <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">Images</h2>
                     </div>
                     <div className="space-y-6">
-                        <FieldGroup label="Logo">
+                        <FieldGroup label="Logo" forId="field-logo-file">
                             <div className="flex items-center gap-4">
                                 {logoPreview && (
                                     <img
@@ -326,13 +333,18 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                     />
                                 )}
                                 <input
+                                    id="field-logo-file"
                                     type="file"
                                     accept="image/*"
                                     onChange={handleLogoUpload}
                                     className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-white/20 file:text-primary hover:file:bg-white/30"
                                 />
                             </div>
+                            {logoError && (
+                                <p role="alert" className="text-xs text-red-500 px-2 mt-1">{logoError}</p>
+                            )}
                             <DesignerInput
+                                id="field-logo-url"
                                 type="url"
                                 name="logoUrl"
                                 value={formData.logoUrl || ''}
@@ -341,14 +353,18 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                             />
                         </FieldGroup>
 
-                        <FieldGroup label={`Screenshots (max ${MAX_SCREENSHOTS})`}>
+                        <FieldGroup label={`Screenshots (max ${MAX_SCREENSHOTS})`} forId="field-screenshots">
                             <input
+                                id="field-screenshots"
                                 type="file"
                                 accept="image/*"
                                 multiple
                                 onChange={handleScreenshotUpload}
                                 className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-white/20 file:text-primary hover:file:bg-white/30"
                             />
+                            {screenshotError && (
+                                <p role="alert" className="text-xs text-red-500 px-2 mt-1">{screenshotError}</p>
+                            )}
                             {screenshots.length > 0 && (
                                 <div className="flex flex-wrap gap-3">
                                     {screenshots.map((shot, i) => (

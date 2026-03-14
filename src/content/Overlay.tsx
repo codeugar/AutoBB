@@ -366,6 +366,7 @@ const Overlay: React.FC = () => {
                 </div>
                 <button
                     onClick={() => setIsOpen(false)}
+                    aria-label="Close panel"
                     className="p-1 rounded-md text-white/80 hover:text-white hover:bg-white/20 transition-colors"
                 >
                     <X size={16} />
@@ -376,11 +377,12 @@ const Overlay: React.FC = () => {
             <div className="p-4 flex flex-col gap-4 max-h-[60vh] overflow-y-auto">
                 {/* Profile Selector */}
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-bold text-muted uppercase tracking-wider">
+                    <label htmlFor="overlay-profile-select" className="text-[10px] font-bold text-muted uppercase tracking-wider">
                         Active Profile
                     </label>
                     <div className="relative group">
                         <select
+                            id="overlay-profile-select"
                             value={activeProfileId || ''}
                             onChange={(e) => {
                                 setActiveProfileId(e.target.value);
@@ -455,7 +457,11 @@ const Overlay: React.FC = () => {
 
                 {/* Status Message */}
                 {status && (
-                    <div className={`
+                    <div
+                        role="status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                        className={`
                         px-3 py-2.5 rounded-lg flex items-center gap-2 text-xs font-medium animate-fade-in
                         ${status.type === 'success'
                             ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/20'

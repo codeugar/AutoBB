@@ -1,11 +1,13 @@
 const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent';
 
-const PROMPT_TEMPLATE = `You are a concise assistant for indie hackers and product makers doing product research.
-When given a term or phrase, explain what it means in 2-3 sentences.
-Focus on practical meaning for building, marketing, or positioning a product.
-Be direct. No preamble.
+const PROMPT_TEMPLATE = `你是一个专为独立开发者和产品创始人服务的简洁助手，帮助他们在做产品调研时快速理解术语。
+当给定一个词语或短语时，用2-3句话解释其含义。
+聚焦于对产品构建、营销或定位的实际意义。
+直接回答，不要有任何开场白。
+必须用简体中文回答。
 
-Explain this: "`;
+解释这个词："`;
+
 
 export async function explainText(text: string, apiKey: string): Promise<string> {
     const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {

@@ -14,7 +14,7 @@ interface Props {
 
 const FieldGroup = ({ label, forId, children }: { label: string; forId?: string; children: React.ReactNode }) => (
     <div className="space-y-4">
-        <label htmlFor={forId} className="text-[11px] font-black uppercase tracking-[0.3em] text-muted block px-2">{label}</label>
+        <label htmlFor={forId} className="text-[11px] font-semibold uppercase tracking-[0.3em] text-muted block px-2">{label}</label>
         {children}
     </div>
 );
@@ -22,7 +22,7 @@ const FieldGroup = ({ label, forId, children }: { label: string; forId?: string;
 const DesignerInput = ({ ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input
         {...props}
-        className="w-full h-16 glass-input rounded-[20px] px-6 text-[15px] font-black text-primary placeholder-[rgba(6,78,59,0.35)]
+        className="w-full h-16 glass-input rounded-[20px] px-6 text-[15px] font-medium text-primary placeholder-[rgba(6,78,59,0.35)]
                  transition-all duration-300 outline-none hover:border-white/60 focus:border-[rgba(16,185,129,0.6)] focus:ring-8 focus:ring-[rgba(16,185,129,0.15)]"
     />
 );
@@ -31,7 +31,7 @@ const DesignerTextArea = ({ rows = 4, ...props }: React.TextareaHTMLAttributes<H
     <textarea
         rows={rows}
         {...props}
-        className="w-full glass-input rounded-[24px] px-6 py-5 text-[15px] font-black text-primary placeholder-[rgba(6,78,59,0.35)]
+        className="w-full glass-input rounded-[24px] px-6 py-5 text-[15px] font-medium text-primary placeholder-[rgba(6,78,59,0.35)]
                  transition-all duration-300 outline-none resize-none hover:border-white/60 focus:border-[rgba(16,185,129,0.6)] focus:ring-8 focus:ring-[rgba(16,185,129,0.15)]"
     />
 );
@@ -40,7 +40,7 @@ const DesignerSelect = ({ options, ...props }: { options: { value: string; label
     <div className="relative group">
         <select
             {...props}
-            className="w-full h-16 glass-input rounded-[20px] px-6 text-[15px] font-black text-primary appearance-none cursor-pointer
+            className="w-full h-16 glass-input rounded-[20px] px-6 text-[15px] font-medium text-primary appearance-none cursor-pointer
                      transition-all duration-300 outline-none hover:border-white/60 focus:border-[rgba(16,185,129,0.6)] focus:ring-8 focus:ring-[rgba(16,185,129,0.15)]"
         >
             {options.map(opt => <option key={opt.value} value={opt.value} className="bg-white text-primary">{opt.label}</option>)}
@@ -185,7 +185,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                         <h1 className="text-lg font-black text-heading leading-tight">
                             {profile ? 'Modify' : 'Create'}
                         </h1>
-                        <p className="text-[10px] text-muted font-black uppercase mt-1 tracking-[0.2em]">Project details</p>
+                        <p className="text-[11px] text-muted font-medium uppercase mt-1 tracking-[0.2em]">Project details</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -196,7 +196,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                     )}
                     <button
                         onClick={() => onSave(formData)}
-                        className="h-12 px-6 accent-gradient text-white font-black text-[13px] uppercase tracking-widest rounded-2xl shadow-[0_10px_24px_rgba(16,185,129,0.3)] hover:scale-105 active:scale-95 transition-all"
+                        className="h-12 px-6 accent-gradient text-white font-semibold text-[13px] uppercase tracking-widest rounded-2xl shadow-[0_10px_24px_rgba(16,185,129,0.3)] hover:scale-105 active:scale-95 transition-all"
                     >
                         Save
                     </button>
@@ -210,7 +210,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 <section className="space-y-8">
                     <div className="flex items-center gap-4 text-accent">
                         <Layout size={18} strokeWidth={3} />
-                        <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">Identity</h2>
+                        <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">Identity</h2>
                     </div>
                     <div className="space-y-6">
                         <FieldGroup label="Product Name" forId="field-name">
@@ -242,7 +242,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 <section className="space-y-8">
                     <div className="flex items-center gap-4 text-accent">
                         <Type size={18} strokeWidth={3} />
-                        <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">Marketing</h2>
+                        <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">Marketing</h2>
                     </div>
                     <div className="space-y-6">
                         <FieldGroup label="Short Tagline" forId="field-title">
@@ -262,9 +262,9 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                     <div className="flex justify-between items-center">
                         <div className="flex items-center gap-4 text-accent">
                             <ListTree size={18} strokeWidth={3} />
-                            <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">Features</h2>
+                            <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">Features</h2>
                         </div>
-                        <button type="button" onClick={addFeature} className="accent-gradient text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_10px_24px_rgba(16,185,129,0.3)]">
+                        <button type="button" onClick={addFeature} className="accent-gradient text-white px-4 py-2 rounded-xl text-[11px] font-semibold uppercase tracking-widest transition-all shadow-[0_10px_24px_rgba(16,185,129,0.3)]">
                             Add Key
                         </button>
                     </div>
@@ -296,9 +296,9 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4 text-accent">
                             <ListTree size={18} strokeWidth={3} />
-                            <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">User Cases</h2>
+                            <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">User Cases</h2>
                         </div>
-                        <span className="text-[10px] text-muted font-black uppercase tracking-[0.3em]">
+                        <span className="text-[11px] text-muted font-medium uppercase tracking-[0.3em]">
                             {userCasesCount}/5
                         </span>
                     </div>
@@ -320,7 +320,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 <section className="space-y-8">
                     <div className="flex items-center gap-4 text-accent">
                         <Layout size={18} strokeWidth={3} />
-                        <h2 className="text-[12px] font-black uppercase tracking-[0.4em]">Images</h2>
+                        <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">Images</h2>
                     </div>
                     <div className="space-y-6">
                         <FieldGroup label="Logo" forId="field-logo-file">

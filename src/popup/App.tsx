@@ -40,10 +40,10 @@ const ControlCard = ({ icon: Icon, label, enabled, onToggle }: { icon: any; labe
                 <Icon size={18} />
             </div>
             <div className="flex flex-col">
-                <span className={`text-[13px] font-black tracking-tight ${enabled ? 'text-heading' : 'text-muted'}`}>
+                <span className={`text-[13px] font-semibold tracking-tight ${enabled ? 'text-heading' : 'text-muted'}`}>
                     {label}
                 </span>
-                <span className="text-[10px] text-muted font-bold uppercase tracking-[0.1em] mt-0.5">
+                <span className="text-[11px] text-muted font-medium uppercase tracking-[0.1em] mt-0.5">
                     {enabled ? 'Active' : 'Disabled'}
                 </span>
             </div>
@@ -137,7 +137,7 @@ const App = () => {
                                         AutoBB
                                     </h1>
                                     <div className="flex items-center gap-3 mt-2.5">
-                                        <span className="glass-card text-accent text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-[0.1em]">Version 1.2.4 PRO</span>
+                                        <span className="glass-card text-accent text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-[0.1em]">v1.2.4 PRO</span>
                                     </div>
                                 </div>
                             </div>
@@ -201,7 +201,7 @@ const App = () => {
                             className="text-muted flex items-center gap-2.5 transition-all group opacity-50 cursor-not-allowed"
                         >
                             <Settings size={18} className="group-hover:rotate-45 transition-transform" />
-                            <span className="text-[11px] font-black uppercase tracking-widest text-muted">Settings</span>
+                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted">Settings</span>
                         </button>
                         <button
                             disabled
@@ -210,7 +210,7 @@ const App = () => {
                             className="text-muted flex items-center gap-2.5 transition-all group opacity-50 cursor-not-allowed"
                         >
                             <LifeBuoy size={18} />
-                            <span className="text-[11px] font-black uppercase tracking-widest text-muted">Support</span>
+                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted">Support</span>
                         </button>
                     </div>
                 </footer>

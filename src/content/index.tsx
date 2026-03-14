@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import Overlay from './Overlay';
+import SelectionAssistant from './SelectionAssistant';
 import { domUtils } from './dom';
 // @ts-ignore
 import cssUrl from '../index.css?inline'; // Using inline for Shadow DOM style injection
@@ -43,6 +44,7 @@ const init = () => {
     ReactDOM.createRoot(container).render(
         <React.StrictMode>
             <Overlay />
+            <SelectionAssistant />
         </React.StrictMode>
     );
 };

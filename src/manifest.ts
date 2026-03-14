@@ -20,6 +20,7 @@ export default defineManifest({
         },
     },
     permissions: ['storage', 'activeTab', 'scripting', 'clipboardWrite'],
+    host_permissions: ['https://generativelanguage.googleapis.com/*'],
     background: {
         service_worker: 'src/background/index.ts',
         type: 'module',

@@ -3,6 +3,7 @@ import type { Profile } from '../types';
 import { storage } from '../storage';
 import ProfileList from './components/ProfileList';
 import ProfileEditor from './components/ProfileEditor';
+import ApiKeySettings from './components/ApiKeySettings';
 import { Zap, MonitorOff, Globe, Settings, LifeBuoy } from 'lucide-react';
 
 // Design-driven Toggle Switch
@@ -51,7 +52,7 @@ const ControlCard = ({ icon: Icon, label, enabled, onToggle }: { icon: any; labe
 
 const App = () => {
     const [profiles, setProfiles] = useState<Profile[]>([]);
-    const [currentView, setCurrentView] = useState<'list' | 'editor'>('list');
+    const [currentView, setCurrentView] = useState<'list' | 'editor' | 'settings'>('list');
     const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
 
     const [isGlobalEnabled, setIsGlobalEnabled] = useState(true);
@@ -160,7 +161,9 @@ const App = () => {
 
                 {/* Dynamic Content Frame */}
                 <main className={`flex-1 relative z-10 flex flex-col ${currentView === 'list' ? 'pb-6' : 'p-0'}`}>
-                    {currentView === 'list' ? (
+                    {currentView === 'settings' ? (
+                        <ApiKeySettings onBack={() => setCurrentView('list')} />
+                    ) : currentView === 'list' ? (
                         <ProfileList
                             profiles={profiles}
                             onEdit={(p) => { setEditingProfile(p); setCurrentView('editor'); }}
@@ -190,13 +193,11 @@ const App = () => {
                 <footer className="px-10 py-5 flex items-center justify-between bg-white/45 border-t border-white/50 relative z-20">
                     <div className="flex gap-8">
                         <button
-                            disabled
-                            aria-disabled="true"
-                            title="Coming soon"
-                            className="text-muted flex items-center gap-2.5 transition-all group opacity-50 cursor-not-allowed"
+                            onClick={() => setCurrentView('settings')}
+                            className="text-muted flex items-center gap-2.5 transition-all group hover:text-accent"
                         >
                             <Settings size={18} className="group-hover:rotate-45 transition-transform" />
-                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted">Settings</span>
+                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted group-hover:text-accent">Settings</span>
                         </button>
                         <button
                             disabled

@@ -59,3 +59,29 @@ src/
 - @crxjs/vite-plugin for Chrome extension bundling
 - Tailwind CSS 4 (with @tailwindcss/postcss)
 - Path alias: `@/` → `src/`
+
+## Design Context
+
+### Users
+Indie hackers, product makers, and startup founders who repeatedly submit their product to directories, review sites, and marketplaces (Product Hunt, Hacker News, app directories). They're in a flow state of promotion — quickly hopping between submission forms. They need speed and confidence: the tool should feel like a productivity superpower, not a utility script.
+
+### Brand Personality
+**Precise · Fluid · Confident**
+
+AutoBB is a professional's secret weapon. The UI should feel premium and purposeful — like a high-end productivity tool that respects the user's time. It's not playful or flashy; it's quietly powerful.
+
+### Aesthetic Direction
+- **Theme**: Apple-inspired glassmorphism with a lime-to-mint green palette. Light mode only.
+- **Accent**: Emerald/mint green (#059669 → #10B981) — the brand color that unifies all surfaces
+- **Background**: Lime-to-green gradient (`#d4fc79 → #96e6a1`), fresh and energetic
+- **Glass surfaces**: White-tinted frosted panels with `backdrop-filter: blur`, layered depth
+- **Typography**: Plus Jakarta Sans — heavy weights (`font-black`) for impact, but hierarchy must be maintained through size variation, not just weight
+- **Reference feel**: Raycast, Linear, Arc Browser — polished, intentional, no wasted pixels
+- **Anti-references**: Avoid anything that looks like a generic browser extension popup, dark hacker tools, or overly corporate dashboards
+
+### Design Principles
+1. **Instant comprehension** — At a glance, the user knows exactly what to do. No cognitive overhead.
+2. **Earn trust through polish** — Every detail (spacing, easing, shadow depth) signals quality. Rough edges erode confidence.
+3. **Hierarchy over uniformity** — Not everything is `font-black`. Size, opacity, and weight should create clear reading order.
+4. **Responsive feedback** — Every interaction has a micro-reaction. Clicks feel physical, transitions feel spring-loaded.
+5. **Minimal footprint, maximum power** — The overlay is a guest on every webpage. It should be unobtrusive when idle, instantly useful when open.

@@ -23,6 +23,7 @@ const ProfileList: React.FC<Props> = ({ profiles, onEdit, onCreate }) => {
                 </div>
                 <button
                     onClick={onCreate}
+                    aria-label="Create new profile"
                     className="w-12 h-12 flex items-center justify-center accent-gradient text-white rounded-[20px] shadow-[0_10px_24px_rgba(16,185,129,0.3)] hover:scale-110 active:scale-90 transition-all duration-300"
                 >
                     <Plus size={22} strokeWidth={4} />
@@ -44,9 +45,9 @@ const ProfileList: React.FC<Props> = ({ profiles, onEdit, onCreate }) => {
                     </div>
                 ) : (
                     profiles.map((profile, index) => (
-                        <div
+                        <button
                             key={profile.id}
-                            className="group relative w-full px-7 py-5 transition-all duration-300 cursor-pointer animate-slide-up
+                            className="group relative w-full px-7 py-5 transition-all duration-300 cursor-pointer animate-slide-up text-left
                                      flex flex-col gap-5 rounded-3xl glass-card hover:bg-white/50 hover:border-white/60
                                      after:content-[''] after:absolute after:left-7 after:right-7 after:bottom-0 after:h-px
                                      after:bg-gradient-to-r after:from-transparent after:via-white/40 after:to-transparent
@@ -77,7 +78,7 @@ const ProfileList: React.FC<Props> = ({ profiles, onEdit, onCreate }) => {
                                     {profile.pricing || 'Free'}
                                 </div>
                             </div>
-                        </div>
+                        </button>
                     ))
                 )}
             </div>

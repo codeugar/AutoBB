@@ -75,7 +75,7 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
                     title={copied ? 'Copied!' : `Copy ${label}`}
                 >
                     {copied ? (
-                        <Check size={12} className="text-emerald-500" />
+                        <Check size={12} className="text-[var(--color-success)]" />
                     ) : (
                         <Copy size={12} />
                     )}
@@ -85,7 +85,7 @@ export const CopyableField: React.FC<CopyableFieldProps> = ({
                 ))}
             </div>
             {error && (
-                <div className="flex items-center gap-1 text-[10px] text-red-400">
+                <div className="flex items-center gap-1 text-[10px] text-[var(--color-error-text)]">
                     <AlertCircle size={10} />
                     {error}
                 </div>

@@ -464,9 +464,13 @@ const Overlay: React.FC = () => {
                         className={`
                         px-3 py-2.5 rounded-lg flex items-center gap-2 text-xs font-medium animate-fade-in
                         ${status.type === 'success'
-                            ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/20'
-                            : 'bg-red-500/10 text-red-400 border border-red-500/10'}
-                    `}>
+                            ? 'border'
+                            : 'border'}
+                    `}
+                        style={status.type === 'success'
+                            ? { background: 'var(--color-success-bg)', color: 'var(--color-success-text)', borderColor: 'var(--color-success-border)' }
+                            : { background: 'var(--color-error-bg)', color: 'var(--color-error-text)', borderColor: 'var(--color-error-border)' }
+                        }>
                         {status.type === 'success' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
                         {status.msg}
                     </div>
@@ -477,9 +481,9 @@ const Overlay: React.FC = () => {
             <div className="px-4 py-2 border-t border-white/50 bg-white/45 rounded-b-2xl">
                 <button
                     onClick={handleDisableSite}
-                    className="w-full py-1 text-[11px] text-muted hover:text-red-500 flex items-center justify-center gap-1.5 transition-colors group"
+                    className="w-full py-1 text-[11px] text-muted hover:text-[var(--color-error-text)] flex items-center justify-center gap-1.5 transition-colors group"
                 >
-                    <MonitorOff size={12} className="group-hover:stroke-red-400 transition-colors" />
+                    <MonitorOff size={12} className="transition-colors" />
                     Disable on this site
                 </button>
             </div>

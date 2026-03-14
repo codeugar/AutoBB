@@ -110,7 +110,7 @@ export const ImageItem: React.FC<ImageItemProps> = ({ label, base64, url }) => {
                             title={copiedImg ? 'Copied!' : 'Copy image'}
                         >
                             {copiedImg ? (
-                                <Check size={12} className="text-emerald-500" />
+                                <Check size={12} className="text-[var(--color-success)]" />
                             ) : (
                                 <Copy size={12} />
                             )}
@@ -127,7 +127,7 @@ export const ImageItem: React.FC<ImageItemProps> = ({ label, base64, url }) => {
                             title={copiedUrl ? 'Copied!' : 'Copy URL'}
                         >
                             {copiedUrl ? (
-                                <Check size={12} className="text-emerald-500" />
+                                <Check size={12} className="text-[var(--color-success)]" />
                             ) : (
                                 <Link size={12} />
                             )}
@@ -140,13 +140,13 @@ export const ImageItem: React.FC<ImageItemProps> = ({ label, base64, url }) => {
                 </div>
             </div>
             {actionError && (
-                <div className="flex items-center gap-1 text-[10px] text-red-400 ml-20">
+                <div className="flex items-center gap-1 text-[10px] text-[var(--color-error-text)] ml-20">
                     <AlertCircle size={10} />
                     {actionError}
                 </div>
             )}
             {dragError && (
-                <div className="flex items-center gap-1 text-[10px] text-red-400 ml-20">
+                <div className="flex items-center gap-1 text-[10px] text-[var(--color-error-text)] ml-20">
                     <AlertCircle size={10} />
                     {dragError}
                 </div>

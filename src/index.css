@@ -47,9 +47,9 @@
   --shadow-glow-mint-lg: 0 0 32px -4px rgba(16, 185, 129, 0.45);
   --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.15);
 
-  /* Transitions - Spring-like Apple curves */
+  /* Transitions - Smooth deceleration curves */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --duration-fast: 150ms;
   --duration-normal: 200ms;
@@ -576,43 +576,6 @@
     border-radius: var(--radius-2xl);
   }
 
-  /* Panel (for Overlay) */
-  .panel {
-    background: rgba(24, 24, 27, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
-  }
-
-  .panel-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-4);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  .panel-content {
-    padding: var(--space-4);
-  }
-
-  .panel-footer {
-    padding: var(--space-3) var(--space-4);
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  /* Stats Card */
-  .stats-card {
-    padding: var(--space-4);
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-lg);
-  }
-
   /* Status Badge */
   .status-indicator {
     width: 8px;
@@ -975,7 +938,7 @@ html, body {
 
 /* Focus within for form groups */
 .focus-group:focus-within {
-  border-color: rgba(139, 92, 246, 0.4);
+  border-color: rgba(16, 185, 129, 0.4);
 }
 
 /* Loading skeleton */

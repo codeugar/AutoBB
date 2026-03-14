@@ -14,7 +14,7 @@ const ProfileList: React.FC<Props> = ({ profiles, onEdit, onCreate }) => {
             {/* Header */}
             <div className="px-7 pt-10 pb-6 flex justify-between items-end">
                 <div className="space-y-1.5">
-                    <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-accent">
+                    <h2 className="text-[11px] font-semibold uppercase tracking-[0.4em] text-accent">
                         Library
                     </h2>
                     <p className="text-xl font-black text-heading tracking-tight">
@@ -39,7 +39,7 @@ const ProfileList: React.FC<Props> = ({ profiles, onEdit, onCreate }) => {
                             <Sparkles size={32} className="text-accent relative z-10 animate-glow" />
                         </div>
                         <h3 className="text-base font-black text-muted-strong mb-2">No active projects</h3>
-                        <p className="text-[12px] text-muted font-bold leading-relaxed px-8">
+                        <p className="text-[12px] text-muted font-medium leading-relaxed px-8">
                             Click the plus button to configure your first automated profile.
                         </p>
                     </div>
@@ -60,10 +60,10 @@ const ProfileList: React.FC<Props> = ({ profiles, onEdit, onCreate }) => {
                                     {profile.name.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-black text-heading group-hover:text-heading truncate text-lg leading-tight tracking-tight">
+                                    <h3 className="font-bold text-heading group-hover:text-heading truncate text-lg leading-tight tracking-tight">
                                         {profile.name}
                                     </h3>
-                                    <p className="text-[11px] font-mono font-black text-muted mt-1 truncate tracking-tighter">
+                                    <p className="text-xs font-mono font-medium text-muted mt-1 truncate tracking-tighter">
                                         {profile.domain || 'no-link.attached'}
                                     </p>
                                 </div>
@@ -71,10 +71,10 @@ const ProfileList: React.FC<Props> = ({ profiles, onEdit, onCreate }) => {
                             </div>
 
                             <div className="flex gap-2.5">
-                                <div className="px-3 py-1 rounded-full glass-card text-[10px] font-black uppercase tracking-widest text-muted-strong">
+                                <div className="px-3 py-1 rounded-full glass-card text-[11px] font-semibold uppercase tracking-widest text-muted-strong">
                                     {profile.category || 'Product'}
                                 </div>
-                                <div className="px-3 py-1 rounded-full glass-card text-[10px] font-black uppercase tracking-widest text-accent">
+                                <div className="px-3 py-1 rounded-full glass-card text-[11px] font-semibold uppercase tracking-widest text-accent">
                                     {profile.pricing || 'Free'}
                                 </div>
                             </div>

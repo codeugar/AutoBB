@@ -5,7 +5,8 @@ const KEYS = {
     ACTIVE_PROFILE: 'activeProfileId',
     MAPPINGS: 'field_mappings',
     GLOBAL_DISABLED: 'global_disabled',
-    DISABLED_SITES: 'disabled_sites'
+    DISABLED_SITES: 'disabled_sites',
+    GEMINI_API_KEY: 'gemini_api_key'
 };
 
 export const storage = {
@@ -81,5 +82,14 @@ export const storage = {
             sites = sites.filter(d => d !== domain);
         }
         await chrome.storage.local.set({ [KEYS.DISABLED_SITES]: sites });
+    },
+
+    async getGeminiApiKey(): Promise<string> {
+        const result = await chrome.storage.local.get(KEYS.GEMINI_API_KEY);
+        return (result[KEYS.GEMINI_API_KEY] as string) || '';
+    },
+
+    async setGeminiApiKey(key: string): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.GEMINI_API_KEY]: key });
     }
 };

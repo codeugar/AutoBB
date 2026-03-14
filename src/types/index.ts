@@ -26,3 +26,19 @@ export interface FieldMapping {
     selector: string;
     fieldKey: keyof Profile | string;
 }
+
+export interface TrackedSite {
+    domain: string;
+    addedAt: number;
+}
+
+export interface MonthlyVisit {
+    date: string;   // "YYYY-MM"
+    visits: number;
+}
+
+export interface TrafficCache {
+    domain: string;
+    data: MonthlyVisit[];
+    fetchedAt: number;
+}

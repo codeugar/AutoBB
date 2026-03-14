@@ -4,7 +4,8 @@ import { storage } from '../storage';
 import ProfileList from './components/ProfileList';
 import ProfileEditor from './components/ProfileEditor';
 import ApiKeySettings from './components/ApiKeySettings';
-import { Zap, MonitorOff, Globe, Settings, LifeBuoy } from 'lucide-react';
+import WebsiteTracker from './components/WebsiteTracker';
+import { Zap, MonitorOff, Globe, Settings, TrendingUp } from 'lucide-react';
 
 // Design-driven Toggle Switch
 const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => {
@@ -52,7 +53,7 @@ const ControlCard = ({ icon: Icon, label, enabled, onToggle }: { icon: any; labe
 
 const App = () => {
     const [profiles, setProfiles] = useState<Profile[]>([]);
-    const [currentView, setCurrentView] = useState<'list' | 'editor' | 'settings'>('list');
+    const [currentView, setCurrentView] = useState<'list' | 'editor' | 'settings' | 'tracker'>('list');
     const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
 
     const [isGlobalEnabled, setIsGlobalEnabled] = useState(true);
@@ -163,6 +164,8 @@ const App = () => {
                 <main className={`flex-1 relative z-10 flex flex-col ${currentView === 'list' ? 'pb-6' : 'p-0'}`}>
                     {currentView === 'settings' ? (
                         <ApiKeySettings onBack={() => setCurrentView('list')} />
+                    ) : currentView === 'tracker' ? (
+                        <WebsiteTracker onBack={() => setCurrentView('list')} />
                     ) : currentView === 'list' ? (
                         <ProfileList
                             profiles={profiles}
@@ -200,13 +203,11 @@ const App = () => {
                             <span className="text-[11px] font-medium uppercase tracking-widest text-muted group-hover:text-accent">Settings</span>
                         </button>
                         <button
-                            disabled
-                            aria-disabled="true"
-                            title="Coming soon"
-                            className="text-muted flex items-center gap-2.5 transition-all group opacity-50 cursor-not-allowed"
+                            onClick={() => setCurrentView('tracker')}
+                            className="text-muted flex items-center gap-2.5 transition-all group hover:text-accent"
                         >
-                            <LifeBuoy size={18} />
-                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted">Support</span>
+                            <TrendingUp size={18} />
+                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted group-hover:text-accent">Tracker</span>
                         </button>
                     </div>
                 </footer>

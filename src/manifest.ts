@@ -19,7 +19,7 @@ export default defineManifest({
             '48': 'icon48.png',
         },
     },
-    permissions: ['storage', 'activeTab', 'scripting', 'clipboardWrite'],
+    permissions: ['storage', 'activeTab', 'clipboardWrite'],
     host_permissions: ['https://generativelanguage.googleapis.com/*', 'https://data.similarweb.com/*'],
     background: {
         service_worker: 'src/background/index.ts',

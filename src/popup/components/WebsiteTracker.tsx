@@ -103,6 +103,106 @@ const Sparkline = ({ data }: { data: { date: string; visits: number }[] }) => {
     );
 };
 
+// Smooth Catmull-Rom bezier line chart with hover tooltip
+const LineChart = ({ data }: { data: { date: string; visits: number }[] }) => {
+    const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+    if (data.length < 2) return null;
+
+    const PAD_L = 38, PAD_R = 10, PAD_T = 16, PAD_B = 22;
+    const W = 286, H = 118;
+    const chartW = W - PAD_L - PAD_R;
+    const chartH = H - PAD_T - PAD_B;
+
+    const maxV = Math.max(...data.map(d => d.visits)) || 1;
+    const toX = (i: number) => PAD_L + (i / (data.length - 1)) * chartW;
+    const toY = (v: number) => PAD_T + chartH - (v / maxV) * chartH;
+    const pts = data.map((d, i) => ({ x: toX(i), y: toY(d.visits), date: d.date, visits: d.visits }));
+
+    // Catmull-Rom → cubic bezier
+    const n = pts.length;
+    let linePath = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+    for (let i = 0; i < n - 1; i++) {
+        const p0 = pts[Math.max(0, i - 1)];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = pts[Math.min(n - 1, i + 2)];
+        const cp1x = (p1.x + (p2.x - p0.x) / 6).toFixed(1);
+        const cp1y = (p1.y + (p2.y - p0.y) / 6).toFixed(1);
+        const cp2x = (p2.x - (p3.x - p1.x) / 6).toFixed(1);
+        const cp2y = (p2.y - (p3.y - p1.y) / 6).toFixed(1);
+        linePath += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+    const areaPath = `${linePath} L ${pts[n-1].x},${PAD_T + chartH} L ${pts[0].x},${PAD_T + chartH} Z`;
+    const gradId = `lg-${data[0]?.date ?? 'x'}`;
+
+    const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const svgX = ((e.clientX - rect.left) / rect.width) * W;
+        let nearest = 0, minDist = Infinity;
+        pts.forEach((p, i) => { const d = Math.abs(p.x - svgX); if (d < minDist) { minDist = d; nearest = i; } });
+        setHoveredIdx(nearest);
+    };
+
+    const hovered = hoveredIdx !== null ? pts[hoveredIdx] : null;
+
+    return (
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" className="overflow-visible" onMouseMove={handleMouseMove} onMouseLeave={() => setHoveredIdx(null)}>
+            <defs>
+                <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10B981" stopOpacity="0.16" />
+                    <stop offset="100%" stopColor="#10B981" stopOpacity="0.01" />
+                </linearGradient>
+            </defs>
+
+            {/* Horizontal grid lines + Y labels */}
+            {[0, 0.5, 1].map((p, i) => {
+                const v = maxV * p;
+                const y = toY(v);
+                return (
+                    <g key={i}>
+                        <line x1={PAD_L} y1={y} x2={W - PAD_R} y2={y} stroke="#d1d5db" strokeWidth="0.5" strokeDasharray="3,3" />
+                        <text x={PAD_L - 5} y={y + 3.5} textAnchor="end" fontSize="9" fill="#9ca3af">{formatVisits(v)}</text>
+                    </g>
+                );
+            })}
+
+            {/* Area fill */}
+            <path d={areaPath} fill={`url(#${gradId})`} />
+
+            {/* Smooth line */}
+            <path d={linePath} fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+
+            {/* Dots */}
+            {pts.map((p, i) => (
+                <circle key={i} cx={p.x} cy={p.y} r={hoveredIdx === i ? 5 : 3.5} fill="#10B981" stroke="white" strokeWidth="1.5" style={{ transition: 'r 0.1s' }} />
+            ))}
+
+            {/* X labels */}
+            {pts.map((p, i) => (
+                <text key={i} x={p.x} y={H - 2} textAnchor="middle" fontSize="9" fill="#9ca3af">{p.date.replace('-', '/')}</text>
+            ))}
+
+            {/* Hover: vertical line + tooltip */}
+            {hovered && (() => {
+                const TW = 76, TH = 36;
+                const tx = hovered.x > W / 2 ? hovered.x - TW - 6 : hovered.x + 8;
+                const ty = Math.max(PAD_T, hovered.y - TH / 2);
+                return (
+                    <g>
+                        <line x1={hovered.x} y1={PAD_T} x2={hovered.x} y2={PAD_T + chartH} stroke="#10B981" strokeWidth="1" strokeDasharray="3,2" opacity="0.45" />
+                        <g transform={`translate(${tx},${ty})`}>
+                            <rect width={TW} height={TH} rx="6" fill="white" stroke="#e5e7eb" strokeWidth="0.75" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.08))' }} />
+                            <text x="8" y="14" fontSize="9" fill="#6b7280" fontWeight="500">{hovered.date.replace('-', '/')}</text>
+                            <text x="8" y="27" fontSize="11" fill="#10B981" fontWeight="700">{formatVisits(hovered.visits)}</text>
+                        </g>
+                    </g>
+                );
+            })()}
+        </svg>
+    );
+};
+
+
 const SiteCard = ({
     site,
     snap,
@@ -162,26 +262,7 @@ const SiteCard = ({
                 <div className="px-4 pb-4 flex flex-col gap-3 border-t border-white/30 pt-3 animate-fade-in">
                     {snap ? (
                         <>
-                            {/* 3-month trend bar */}
-                            {trend.length >= 2 && (
-                                <div className="flex items-end justify-between gap-1 px-1">
-                                    {trend.map((pt, i) => {
-                                        const maxV = Math.max(...trend.map(d => d.visits));
-                                        const h = Math.round((pt.visits / maxV) * 32) + 8;
-                                        const isLast = i === trend.length - 1;
-                                        return (
-                                            <div key={pt.date} className="flex flex-col items-center gap-1 flex-1">
-                                                <span className="text-[9px] text-muted">{formatVisits(pt.visits)}</span>
-                                                <div
-                                                    className={`w-full rounded-sm transition-all ${isLast ? 'accent-gradient' : 'bg-white/40 border border-white/50'}`}
-                                                    style={{ height: `${h}px` }}
-                                                />
-                                                <span className="text-[9px] text-muted">{pt.date.slice(5)}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                            {trend.length >= 2 && <LineChart data={trend} />}
                             <div className="grid grid-cols-3 gap-2">
                                 <StatPill label="Bounce" value={snap.bounceRate > 0 ? `${(snap.bounceRate * 100).toFixed(0)}%` : '—'} />
                                 <StatPill label="Pages/visit" value={snap.pagesPerVisit > 0 ? snap.pagesPerVisit.toFixed(1) : '—'} />

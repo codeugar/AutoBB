@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, Plus, Trash2, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Plus, Trash2, ChevronDown, ChevronUp, RefreshCw, Minus } from 'lucide-react';
 import { storage } from '../../storage';
 import type { TrackedSite, TrafficSnapshot } from '../../types';
 
@@ -47,16 +47,26 @@ async function fetchSnapshot(domain: string): Promise<TrafficSnapshot | null> {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const json = await res.json() as Record<string, any>;
 
-        const eng = json['Engagements'] ?? {};
+        // Note: API has a typo — "Engagments" (missing 'e'), all values are strings
+        const eng = json['Engagments'] ?? {};
         const globalRank: number = json['GlobalRank']?.['Rank'] ?? 0;
+
+        // EstimatedMonthlyVisits: { "2025-12-01": 6887149903, ... } — last 3 months
+        const monthlyRaw = json['EstimatedMonthlyVisits'] as Record<string, number> | undefined;
+        const monthlyTrend = monthlyRaw
+            ? Object.entries(monthlyRaw)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([date, visits]) => ({ date: date.slice(0, 7), visits }))
+            : [];
 
         return {
             domain,
             globalRank,
-            visits: eng['Visits'] ?? 0,
-            bounceRate: eng['BounceRate'] ?? eng['Bounce'] ?? 0,
-            pagesPerVisit: eng['PagePerVisit'] ?? eng['PagesPerVisit'] ?? 0,
-            avgDuration: eng['VisitDuration'] ?? eng['AvgVisitDuration'] ?? 0,
+            visits: parseFloat(eng['Visits'] ?? '0') || 0,
+            bounceRate: parseFloat(eng['BounceRate'] ?? '0') || 0,
+            pagesPerVisit: parseFloat(eng['PagePerVisit'] ?? '0') || 0,
+            avgDuration: parseFloat(eng['TimeOnSite'] ?? '0') || 0,
+            monthlyTrend,
             fetchedAt: Date.now(),
         };
     } catch {
@@ -70,6 +80,28 @@ const StatPill = ({ label, value }: { label: string; value: string }) => (
         <span className="text-[12px] font-semibold text-heading">{value}</span>
     </div>
 );
+
+// 3-month sparkline from EstimatedMonthlyVisits
+const Sparkline = ({ data }: { data: { date: string; visits: number }[] }) => {
+    if (data.length < 2) return null;
+    const values = data.map((d) => d.visits);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min || 1;
+    const W = 56;
+    const H = 24;
+    const pts = values.map((v, i) => {
+        const x = (i / (values.length - 1)) * W;
+        const y = H - ((v - min) / range) * H;
+        return `${x},${y}`;
+    });
+    const positive = values[values.length - 1] >= values[0];
+    return (
+        <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="overflow-visible flex-shrink-0">
+            <polyline points={pts.join(' ')} fill="none" stroke={positive ? '#10B981' : '#f43f5e'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+};
 
 const SiteCard = ({
     site,
@@ -87,66 +119,104 @@ const SiteCard = ({
     onToggle: () => void;
     onRemove: () => void;
     onRefresh: () => void;
-}) => (
-    <div className="glass-card overflow-hidden animate-fade-in">
-        <button
-            onClick={onToggle}
-            className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/30 transition-all text-left"
-        >
-            <div className="flex flex-col gap-1 min-w-0">
-                <span className="text-[13px] font-semibold text-heading truncate">{site.domain}</span>
-                {loading ? (
-                    <span className="text-[11px] text-muted">Fetching…</span>
-                ) : snap ? (
-                    <div className="flex items-center gap-2">
-                        <span className="text-[12px] font-medium text-primary">{formatVisits(snap.visits)}/mo</span>
-                        <span className="text-[11px] text-muted">·</span>
-                        <span className="text-[11px] text-muted">{formatRank(snap.globalRank)} global</span>
-                    </div>
-                ) : (
-                    <span className="text-[11px] text-muted/70">No data — tap refresh</span>
-                )}
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                {expanded ? <ChevronUp size={14} className="text-muted" /> : <ChevronDown size={14} className="text-muted" />}
-            </div>
-        </button>
+}) => {
+    const trend = snap?.monthlyTrend ?? [];
+    const last = trend[trend.length - 1]?.visits ?? 0;
+    const prev = trend[trend.length - 2]?.visits ?? 0;
+    const delta = prev > 0 ? ((last - prev) / prev) * 100 : 0;
+    const positive = delta > 0;
 
-        {expanded && (
-            <div className="px-4 pb-4 flex flex-col gap-3 border-t border-white/30 pt-3 animate-fade-in">
-                {snap ? (
-                    <div className="grid grid-cols-3 gap-2">
-                        <StatPill label="Visits/mo" value={formatVisits(snap.visits)} />
-                        <StatPill label="Bounce" value={snap.bounceRate > 0 ? `${(snap.bounceRate * 100).toFixed(0)}%` : '—'} />
-                        <StatPill label="Pages/visit" value={snap.pagesPerVisit > 0 ? snap.pagesPerVisit.toFixed(1) : '—'} />
-                        <StatPill label="Avg duration" value={snap.avgDuration > 0 ? formatDuration(snap.avgDuration) : '—'} />
-                        <StatPill label="Global rank" value={formatRank(snap.globalRank)} />
-                        <StatPill label="Updated" value={new Date(snap.fetchedAt).toLocaleDateString()} />
-                    </div>
-                ) : (
-                    <p className="text-[11px] text-muted text-center py-1">No traffic data available</p>
-                )}
-                <div className="flex items-center justify-between">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onRefresh(); }}
-                        disabled={loading}
-                        className="flex items-center gap-1.5 text-[11px] text-accent hover:opacity-80 transition-opacity disabled:opacity-40"
-                    >
-                        <RefreshCw size={11} className={loading ? 'animate-spin' : ''} />
-                        Refresh
-                    </button>
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                        className="flex items-center gap-1.5 text-[11px] text-rose-500 hover:text-rose-600 transition-colors"
-                    >
-                        <Trash2 size={11} />
-                        Remove
-                    </button>
+    return (
+        <div className="glass-card overflow-hidden animate-fade-in">
+            <button
+                onClick={onToggle}
+                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/30 transition-all text-left"
+            >
+                <div className="flex flex-col gap-1 min-w-0">
+                    <span className="text-[13px] font-semibold text-heading truncate">{site.domain}</span>
+                    {loading ? (
+                        <span className="text-[11px] text-muted">Fetching…</span>
+                    ) : snap ? (
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[12px] font-medium text-primary">{formatVisits(snap.visits)}/mo</span>
+                            <span className="text-[11px] text-muted">·</span>
+                            <span className="text-[11px] text-muted">{formatRank(snap.globalRank)} global</span>
+                            {delta !== 0 && (
+                                <div className={`flex items-center gap-0.5 text-[11px] font-medium ${positive ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                    {positive ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+                                    <span>{positive ? '+' : ''}{delta.toFixed(1)}%</span>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <span className="text-[11px] text-muted/70">No data — tap refresh</span>
+                    )}
                 </div>
-            </div>
-        )}
-    </div>
-);
+                <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                    {snap && trend.length >= 2 && <Sparkline data={trend} />}
+                    {expanded ? <ChevronUp size={14} className="text-muted" /> : <ChevronDown size={14} className="text-muted" />}
+                </div>
+            </button>
+
+            {expanded && (
+                <div className="px-4 pb-4 flex flex-col gap-3 border-t border-white/30 pt-3 animate-fade-in">
+                    {snap ? (
+                        <>
+                            {/* 3-month trend bar */}
+                            {trend.length >= 2 && (
+                                <div className="flex items-end justify-between gap-1 px-1">
+                                    {trend.map((pt, i) => {
+                                        const maxV = Math.max(...trend.map(d => d.visits));
+                                        const h = Math.round((pt.visits / maxV) * 32) + 8;
+                                        const isLast = i === trend.length - 1;
+                                        return (
+                                            <div key={pt.date} className="flex flex-col items-center gap-1 flex-1">
+                                                <span className="text-[9px] text-muted">{formatVisits(pt.visits)}</span>
+                                                <div
+                                                    className={`w-full rounded-sm transition-all ${isLast ? 'accent-gradient' : 'bg-white/40 border border-white/50'}`}
+                                                    style={{ height: `${h}px` }}
+                                                />
+                                                <span className="text-[9px] text-muted">{pt.date.slice(5)}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            <div className="grid grid-cols-3 gap-2">
+                                <StatPill label="Bounce" value={snap.bounceRate > 0 ? `${(snap.bounceRate * 100).toFixed(0)}%` : '—'} />
+                                <StatPill label="Pages/visit" value={snap.pagesPerVisit > 0 ? snap.pagesPerVisit.toFixed(1) : '—'} />
+                                <StatPill label="Avg duration" value={snap.avgDuration > 0 ? formatDuration(snap.avgDuration) : '—'} />
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-muted/60">
+                                <Minus size={10} />
+                                <span>Updated {new Date(snap.fetchedAt).toLocaleDateString()}</span>
+                            </div>
+                        </>
+                    ) : (
+                        <p className="text-[11px] text-muted text-center py-1">No traffic data available</p>
+                    )}
+                    <div className="flex items-center justify-between">
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onRefresh(); }}
+                            disabled={loading}
+                            className="flex items-center gap-1.5 text-[11px] text-accent hover:opacity-80 transition-opacity disabled:opacity-40"
+                        >
+                            <RefreshCw size={11} className={loading ? 'animate-spin' : ''} />
+                            Refresh
+                        </button>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onRemove(); }}
+                            className="flex items-center gap-1.5 text-[11px] text-rose-500 hover:text-rose-600 transition-colors"
+                        >
+                            <Trash2 size={11} />
+                            Remove
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const WebsiteTracker = ({ onBack }: WebsiteTrackerProps) => {
     const [sites, setSites] = useState<TrackedSite[]>([]);

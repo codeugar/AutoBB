@@ -39,5 +39,6 @@ export interface TrafficSnapshot {
     bounceRate: number;    // 0–1
     pagesPerVisit: number;
     avgDuration: number;   // seconds
+    monthlyTrend: { date: string; visits: number }[];  // last 3 months
     fetchedAt: number;
 }

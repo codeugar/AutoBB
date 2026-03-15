@@ -70,7 +70,8 @@ const SelectionAssistant: React.FC = () => {
                 setLoading(false);
                 return;
             }
-            const result = await explainText(selectedText, apiKey);
+            const prompt = await storage.getGeminiPrompt();
+            const result = await explainText(selectedText, apiKey, prompt);
             setExplanation(result);
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';

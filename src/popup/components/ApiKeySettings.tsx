@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Save, CheckCircle, KeyRound } from 'lucide-react';
-import { storage } from '../../storage';
+import { Eye, EyeOff, Save, CheckCircle, KeyRound, RotateCcw } from 'lucide-react';
+import { storage, DEFAULT_GEMINI_PROMPT } from '../../storage';
 
 interface ApiKeySettingsProps {
     onBack: () => void;
@@ -9,18 +9,35 @@ interface ApiKeySettingsProps {
 const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
     const [apiKey, setApiKey] = useState('');
     const [revealed, setRevealed] = useState(false);
-    const [saved, setSaved] = useState(false);
+    const [keySaved, setKeySaved] = useState(false);
+
+    const [prompt, setPrompt] = useState('');
+    const [promptSaved, setPromptSaved] = useState(false);
 
     useEffect(() => {
-        storage.getGeminiApiKey().then((key) => {
+        Promise.all([
+            storage.getGeminiApiKey(),
+            storage.getGeminiPrompt(),
+        ]).then(([key, p]) => {
             if (key) setApiKey(key);
+            setPrompt(p);
         });
     }, []);
 
-    const handleSave = async () => {
+    const handleSaveKey = async () => {
         await storage.setGeminiApiKey(apiKey.trim());
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+        setKeySaved(true);
+        setTimeout(() => setKeySaved(false), 3000);
+    };
+
+    const handleSavePrompt = async () => {
+        await storage.setGeminiPrompt(prompt);
+        setPromptSaved(true);
+        setTimeout(() => setPromptSaved(false), 3000);
+    };
+
+    const handleResetPrompt = () => {
+        setPrompt(DEFAULT_GEMINI_PROMPT);
     };
 
     return (
@@ -48,7 +65,8 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
             </header>
 
             {/* Content */}
-            <main className="flex-1 px-7 pb-6 flex flex-col gap-5">
+            <main className="flex-1 px-7 pb-6 flex flex-col gap-5 overflow-y-auto">
+                {/* API Key */}
                 <div className="glass-card p-5 flex flex-col gap-4">
                     <div>
                         <p className="text-[13px] font-semibold text-heading mb-1">Gemini API Key</p>
@@ -77,16 +95,16 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                             </button>
                         </div>
                         <button
-                            onClick={handleSave}
+                            onClick={handleSaveKey}
                             disabled={!apiKey.trim()}
                             className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                         >
-                            {saved ? <CheckCircle size={13} /> : <Save size={13} />}
-                            {saved ? 'Saved' : 'Save'}
+                            {keySaved ? <CheckCircle size={13} /> : <Save size={13} />}
+                            {keySaved ? 'Saved' : 'Save'}
                         </button>
                     </div>
 
-                    {saved && (
+                    {keySaved && (
                         <div className="flex items-center gap-2 text-accent text-[12px] font-medium animate-fade-in">
                             <CheckCircle size={13} />
                             API key saved successfully
@@ -94,6 +112,51 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                     )}
                 </div>
 
+                {/* Prompt */}
+                <div className="glass-card p-5 flex flex-col gap-4">
+                    <div className="flex items-start justify-between gap-2">
+                        <div>
+                            <p className="text-[13px] font-semibold text-heading mb-1">AI Prompt</p>
+                            <p className="text-[11px] text-muted leading-relaxed">
+                                自定义 AI 解释时使用的提示词。用 <code className="text-accent bg-white/40 px-1 rounded">{"\"}"}</code> 结尾，词语会自动附加在后面。
+                            </p>
+                        </div>
+                        <button
+                            onClick={handleResetPrompt}
+                            title="Reset to default"
+                            className="flex-shrink-0 flex items-center gap-1.5 text-[11px] text-muted hover:text-accent transition-colors mt-0.5"
+                        >
+                            <RotateCcw size={12} />
+                            Reset
+                        </button>
+                    </div>
+
+                    <textarea
+                        value={prompt}
+                        onChange={(e) => setPrompt(e.target.value)}
+                        rows={7}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-white/50 border border-white/50 text-[12px] text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all resize-none leading-relaxed"
+                    />
+
+                    <div className="flex items-center justify-between">
+                        {promptSaved ? (
+                            <div className="flex items-center gap-2 text-accent text-[12px] font-medium animate-fade-in">
+                                <CheckCircle size={13} />
+                                Prompt saved
+                            </div>
+                        ) : <div />}
+                        <button
+                            onClick={handleSavePrompt}
+                            disabled={!prompt.trim()}
+                            className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        >
+                            {promptSaved ? <CheckCircle size={13} /> : <Save size={13} />}
+                            {promptSaved ? 'Saved' : 'Save Prompt'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* How to get key */}
                 <div className="glass-card p-4 flex flex-col gap-2">
                     <p className="text-[11px] font-semibold text-heading uppercase tracking-widest">How to get an API key</p>
                     <ol className="text-[11px] text-muted leading-relaxed list-decimal list-inside space-y-1">

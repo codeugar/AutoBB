@@ -32,13 +32,12 @@ export interface TrackedSite {
     addedAt: number;
 }
 
-export interface MonthlyVisit {
-    date: string;   // "YYYY-MM"
-    visits: number;
-}
-
-export interface TrafficCache {
+export interface TrafficSnapshot {
     domain: string;
-    data: MonthlyVisit[];
+    globalRank: number;
+    visits: number;        // monthly estimate
+    bounceRate: number;    // 0–1
+    pagesPerVisit: number;
+    avgDuration: number;   // seconds
     fetchedAt: number;
 }

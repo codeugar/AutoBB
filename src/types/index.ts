@@ -26,3 +26,19 @@ export interface FieldMapping {
     selector: string;
     fieldKey: keyof Profile | string;
 }
+
+export interface TrackedSite {
+    domain: string;
+    addedAt: number;
+}
+
+export interface TrafficSnapshot {
+    domain: string;
+    globalRank: number;
+    visits: number;        // monthly estimate
+    bounceRate: number;    // 0–1
+    pagesPerVisit: number;
+    avgDuration: number;   // seconds
+    monthlyTrend: { date: string; visits: number }[];  // last 3 months
+    fetchedAt: number;
+}

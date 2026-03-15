@@ -1,4 +1,4 @@
-import type { Profile } from '../types';
+import type { Profile, TrackedSite, TrafficSnapshot } from '../types';
 
 export const DEFAULT_GEMINI_PROMPT = `你是一个专为独立开发者和产品创始人服务的简洁助手。
 请先通过谷歌搜索了解这个词语的最新含义和用法，然后用2-3句话解释其含义。
@@ -15,7 +15,9 @@ const KEYS = {
     GLOBAL_DISABLED: 'global_disabled',
     DISABLED_SITES: 'disabled_sites',
     GEMINI_API_KEY: 'gemini_api_key',
-    GEMINI_PROMPT: 'gemini_prompt'
+    GEMINI_PROMPT: 'gemini_prompt',
+    TRACKED_SITES: 'tracked_sites',
+    TRAFFIC_CACHE: 'traffic_cache',
 };
 
 export const storage = {
@@ -66,7 +68,6 @@ export const storage = {
         await chrome.storage.local.set({ [KEYS.MAPPINGS]: allMappings });
     },
 
-    // Disable Logic
     async getGlobalDisabled(): Promise<boolean> {
         const result = await chrome.storage.local.get(KEYS.GLOBAL_DISABLED);
         return !!result[KEYS.GLOBAL_DISABLED];
@@ -109,5 +110,32 @@ export const storage = {
 
     async setGeminiPrompt(prompt: string): Promise<void> {
         await chrome.storage.local.set({ [KEYS.GEMINI_PROMPT]: prompt });
+    },
+
+    async getTrackedSites(): Promise<TrackedSite[]> {
+        const result = await chrome.storage.local.get(KEYS.TRACKED_SITES);
+        return (result[KEYS.TRACKED_SITES] as TrackedSite[]) || [];
+    },
+
+    async addTrackedSite(domain: string): Promise<void> {
+        const sites = await this.getTrackedSites();
+        if (!sites.find((s) => s.domain === domain)) {
+            sites.push({ domain, addedAt: Date.now() });
+            await chrome.storage.local.set({ [KEYS.TRACKED_SITES]: sites });
+        }
+    },
+
+    async removeTrackedSite(domain: string): Promise<void> {
+        const sites = await this.getTrackedSites();
+        await chrome.storage.local.set({ [KEYS.TRACKED_SITES]: sites.filter((s) => s.domain !== domain) });
+    },
+
+    async getTrafficCache(): Promise<TrafficSnapshot[]> {
+        const result = await chrome.storage.local.get(KEYS.TRAFFIC_CACHE);
+        return (result[KEYS.TRAFFIC_CACHE] as TrafficSnapshot[]) || [];
+    },
+
+    async setTrafficCache(cache: TrafficSnapshot[]): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.TRAFFIC_CACHE]: cache });
     }
 };

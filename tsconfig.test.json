@@ -9,6 +9,8 @@
     "rootDir": "src/content"
   },
   "include": [
-    "src/content/overlayPosition.ts"
+    "src/content/overlayPosition.ts",
+    "src/content/selectionAssistantPosition.ts",
+    "src/content/textControlSelection.ts"
   ]
 }

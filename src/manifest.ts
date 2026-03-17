@@ -3,7 +3,7 @@ import { defineManifest } from '@crxjs/vite-plugin'
 export default defineManifest({
     name: 'AutoBB',
     description: 'Auto-fill submission forms with profile data',
-    version: '1.0.1',
+    version: '1.1.0',
     manifest_version: 3,
     icons: {
         '16': 'icon16.png',
@@ -19,7 +19,7 @@ export default defineManifest({
             '48': 'icon48.png',
         },
     },
-    permissions: ['storage', 'activeTab', 'scripting', 'clipboardWrite'],
+    permissions: ['storage', 'activeTab', 'clipboardWrite', 'contextMenus'],
     host_permissions: ['https://generativelanguage.googleapis.com/*', 'https://data.similarweb.com/*'],
     background: {
         service_worker: 'src/background/index.ts',

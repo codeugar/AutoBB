@@ -2,6 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Sparkles, X, Loader2 } from 'lucide-react';
 import { storage } from '../storage';
 import { explainText } from './gemini';
+import { computeTooltipPosition, findAnchorRect } from './selectionAssistantPosition';
+import { findTextControlTarget, getTextControlSelection } from './textControlSelection';
+import {
+    EXPLAIN_SELECTION_MESSAGE_TYPE,
+    normalizeSelectionText,
+    type ExplainSelectionMessage,
+} from '../shared/explainSelection';
 
 interface TooltipPos {
     left: number;
@@ -19,19 +26,48 @@ const SelectionAssistant: React.FC = () => {
     const handleMouseUp = useCallback((e: MouseEvent) => {
         // Don't interfere with clicks inside our own UI
         const target = e.target as Node;
-        const shadowHost = document.querySelector('[data-autobb-shadow]');
+        const shadowHost = document.getElementById('autolink-extension-root');
         if (shadowHost?.shadowRoot?.contains(target)) return;
 
         setTimeout(() => {
+            const textControlSelection = getTextControlSelection(findTextControlTarget(e.target));
+            if (textControlSelection) {
+                const trimmed = textControlSelection.text.trim();
+                if (trimmed.length >= 2) {
+                    const nextPos = computeTooltipPosition({
+                        rect: textControlSelection.rect,
+                        fallbackPoint: { x: e.clientX, y: e.clientY },
+                        viewport: { width: window.innerWidth, height: window.innerHeight },
+                    });
+                    if (!nextPos) {
+                        setTooltipPos(null);
+                        return;
+                    }
+                    setSelectedText(trimmed);
+                    setTooltipPos(nextPos);
+                    return;
+                }
+            }
+
             const selection = window.getSelection();
             const text = selection?.toString().trim() ?? '';
             if (text.length >= 2 && selection && selection.rangeCount > 0) {
                 const range = selection.getRangeAt(0);
-                const rect = range.getBoundingClientRect();
-                const left = Math.min(rect.right - 20, window.innerWidth - 48);
-                const top = Math.min(rect.bottom + 8, window.innerHeight - 48);
+                const rect = findAnchorRect(
+                    range.getBoundingClientRect(),
+                    Array.from(range.getClientRects()),
+                );
+                const nextPos = computeTooltipPosition({
+                    rect,
+                    fallbackPoint: { x: e.clientX, y: e.clientY },
+                    viewport: { width: window.innerWidth, height: window.innerHeight },
+                });
+                if (!nextPos) {
+                    setTooltipPos(null);
+                    return;
+                }
                 setSelectedText(text);
-                setTooltipPos({ left, top });
+                setTooltipPos(nextPos);
             } else {
                 setTooltipPos(null);
             }
@@ -54,9 +90,12 @@ const SelectionAssistant: React.FC = () => {
         };
     }, [handleMouseUp, handleKeyDown]);
 
-    const handleExplainClick = async (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const startExplanation = useCallback(async (text: string) => {
+        const normalized = normalizeSelectionText(text);
+        if (!normalized) return;
+
         window.getSelection()?.removeAllRanges();
+        setSelectedText(normalized);
         setTooltipPos(null);
         setPanelOpen(true);
         setLoading(true);
@@ -71,7 +110,7 @@ const SelectionAssistant: React.FC = () => {
                 return;
             }
             const prompt = await storage.getGeminiPrompt();
-            const result = await explainText(selectedText, apiKey, prompt);
+            const result = await explainText(normalized, apiKey, prompt);
             setExplanation(result);
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
@@ -79,6 +118,24 @@ const SelectionAssistant: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    }, []);
+
+    useEffect(() => {
+        const handleRuntimeMessage = (message: unknown) => {
+            const request = message as ExplainSelectionMessage | null;
+            if (request?.type !== EXPLAIN_SELECTION_MESSAGE_TYPE) return;
+            void startExplanation(request.text);
+        };
+
+        chrome.runtime.onMessage.addListener(handleRuntimeMessage);
+        return () => {
+            chrome.runtime.onMessage.removeListener(handleRuntimeMessage);
+        };
+    }, [startExplanation]);
+
+    const handleExplainClick = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        await startExplanation(selectedText);
     };
 
     const closePanel = () => {

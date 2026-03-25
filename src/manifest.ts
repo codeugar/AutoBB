@@ -2,8 +2,8 @@ import { defineManifest } from '@crxjs/vite-plugin'
 
 export default defineManifest({
     name: 'AutoBB',
-    description: 'Auto-fill submission forms with profile data',
-    version: '1.1.0',
+    description: 'Auto-fill submission forms and analyze SERP rankings with domain metrics',
+    version: '1.2.0',
     manifest_version: 3,
     icons: {
         '16': 'icon16.png',

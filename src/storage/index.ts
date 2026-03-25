@@ -18,6 +18,8 @@ const KEYS = {
     GEMINI_PROMPT: 'gemini_prompt',
     TRACKED_SITES: 'tracked_sites',
     TRAFFIC_CACHE: 'traffic_cache',
+    SERPER_API_KEY: 'serper_api_key',
+    SERP_MOCK_MODE: 'serp_mock_mode',
 };
 
 export const storage = {
@@ -137,5 +139,25 @@ export const storage = {
 
     async setTrafficCache(cache: TrafficSnapshot[]): Promise<void> {
         await chrome.storage.local.set({ [KEYS.TRAFFIC_CACHE]: cache });
-    }
+    },
+
+    // SERP Analysis settings
+    async getSerperApiKey(): Promise<string> {
+        const result = await chrome.storage.local.get(KEYS.SERPER_API_KEY);
+        return (result[KEYS.SERPER_API_KEY] as string) || '';
+    },
+
+    async setSerperApiKey(key: string): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.SERPER_API_KEY]: key });
+    },
+
+    async getSerpMockMode(): Promise<boolean> {
+        const result = await chrome.storage.local.get(KEYS.SERP_MOCK_MODE);
+        // Default to true (mock mode on) when not set
+        return result[KEYS.SERP_MOCK_MODE] === undefined ? true : !!result[KEYS.SERP_MOCK_MODE];
+    },
+
+    async setSerpMockMode(enabled: boolean): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.SERP_MOCK_MODE]: enabled });
+    },
 };

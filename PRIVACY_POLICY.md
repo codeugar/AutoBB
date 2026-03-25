@@ -1,6 +1,6 @@
 # AutoBB Privacy Policy
 
-Last updated: March 18, 2026
+Last updated: March 25, 2026
 
 AutoBB is a Chrome extension that helps users fill online submission forms faster.
 
@@ -15,6 +15,7 @@ AutoBB may handle:
 - Form field information on the current page to detect matching inputs for autofill.
 - Text selected by the user on a webpage, when the user triggers the AI explainer feature.
 - Competitor domain names entered by the user for website traffic tracking.
+- Search keywords entered by the user for SERP analysis.
 
 ## How AutoBB uses data
 
@@ -27,6 +28,7 @@ AutoBB uses this data only to provide extension features:
 - Remember extension preferences.
 - Explain selected text using the AI explainer feature (requires user action).
 - Display monthly website traffic trends for user-specified competitor domains.
+- Analyze search engine results for user-entered keywords (SERP analysis).
 
 ## Data storage and transfer
 
@@ -41,6 +43,12 @@ AutoBB may load Google Fonts to display UI text. This request does not include u
 ### AI Explainer (Gemini API)
 
 When the user selects text and triggers the AI explainer, the selected text is sent to the Google Gemini API to generate an explanation. This requires the user to provide their own Gemini API key, which is stored locally and sent only to Google's API endpoint (`https://generativelanguage.googleapis.com`). Data sent to Google is subject to [Google's Privacy Policy](https://policies.google.com/privacy). AutoBB does not store or transmit the selected text anywhere else.
+
+### SERP Analysis (Serper API)
+
+When the user searches a keyword in the SERP Analysis feature, the search query, selected country, and language are sent to the Serper API (`https://google.serper.dev`) to retrieve Google search results. This requires the user to provide their own Serper API key, which is stored locally and sent only to Serper's API endpoint. No personal data or profile information is included in these requests. Data sent to Serper is subject to [Serper's Privacy Policy](https://serper.dev/privacy). A built-in mock mode allows users to test the feature without an API key using simulated data.
+
+The SERP results page also loads website favicons from `https://favicon.im` to display icons next to search results. Only the domain name is sent in these requests.
 
 ### Website Traffic Tracker (SimilarWeb API)
 
@@ -63,6 +71,8 @@ Users can:
 - Remove all local data by uninstalling the extension.
 - Choose not to provide a Gemini API key to disable the AI explainer feature.
 - Choose not to provide a SimilarWeb API key to disable the website traffic tracker.
+- Choose not to provide a Serper API key and use mock mode to test SERP analysis without external API calls.
+- Enable or disable SERP mock mode at any time in Settings.
 
 ## Contact
 

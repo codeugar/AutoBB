@@ -1,3 +1,4 @@
+import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { crx } from '@crxjs/vite-plugin'
@@ -18,6 +19,11 @@ export default defineConfig({
     // Use relative paths for Chrome extension compatibility
     assetsDir: 'assets',
     rollupOptions: {
+      input: {
+        // Additional HTML pages for SERP analysis (opened via chrome.runtime.getURL)
+        'serp-results': resolve(__dirname, 'src/serp/results/index.html'),
+        'serp-domain': resolve(__dirname, 'src/serp/domain/index.html'),
+      },
       output: {
         // Ensure paths work in extension context
         assetFileNames: 'assets/[name]-[hash][extname]',

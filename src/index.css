@@ -9,6 +9,9 @@
   /* Extend font families */
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* Custom animations */
+  --animate-shimmer: shimmer 1.5s infinite;
 }
 
 /* ============================================

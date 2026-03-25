@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, TrendingDown, Plus, Trash2, ChevronDown, ChevronUp, RefreshCw, Minus } from 'lucide-react';
 import { storage } from '../../storage';
+import { formatVisits, formatDuration, formatRank, parseDomain } from '../../shared/formatters';
 import type { TrackedSite, TrafficSnapshot } from '../../types';
 
 interface WebsiteTrackerProps {
@@ -8,36 +9,6 @@ interface WebsiteTrackerProps {
 }
 
 const CACHE_TTL = 86400000; // 24h
-
-function parseDomain(raw: string): string {
-    const trimmed = raw.trim();
-    try {
-        const url = new URL(trimmed.startsWith('http') ? trimmed : `https://${trimmed}`);
-        return url.hostname.replace(/^www\./, '');
-    } catch {
-        return trimmed.replace(/^www\./, '').split('/')[0];
-    }
-}
-
-function formatVisits(n: number): string {
-    if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-    return String(n);
-}
-
-function formatDuration(seconds: number): string {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}m ${s}s`;
-}
-
-function formatRank(n: number): string {
-    if (n <= 0) return '—';
-    if (n >= 1_000_000) return `#${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `#${(n / 1_000).toFixed(0)}K`;
-    return `#${n}`;
-}
 
 // Fetch from SimilarWeb's free undocumented extension endpoint
 async function fetchSnapshot(domain: string): Promise<TrafficSnapshot | null> {

@@ -5,7 +5,8 @@ import ProfileList from './components/ProfileList';
 import ProfileEditor from './components/ProfileEditor';
 import ApiKeySettings from './components/ApiKeySettings';
 import WebsiteTracker from './components/WebsiteTracker';
-import { Zap, MonitorOff, Globe, Settings, TrendingUp } from 'lucide-react';
+import SerpSearch from './components/SerpSearch';
+import { Zap, MonitorOff, Globe, Settings, TrendingUp, Search } from 'lucide-react';
 
 // Design-driven Toggle Switch
 const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => {
@@ -53,7 +54,7 @@ const ControlCard = ({ icon: Icon, label, enabled, onToggle }: { icon: any; labe
 
 const App = () => {
     const [profiles, setProfiles] = useState<Profile[]>([]);
-    const [currentView, setCurrentView] = useState<'list' | 'editor' | 'settings' | 'tracker'>('list');
+    const [currentView, setCurrentView] = useState<'list' | 'editor' | 'settings' | 'tracker' | 'serp'>('list');
     const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
 
     const [isGlobalEnabled, setIsGlobalEnabled] = useState(true);
@@ -166,6 +167,8 @@ const App = () => {
                         <ApiKeySettings onBack={() => setCurrentView('list')} />
                     ) : currentView === 'tracker' ? (
                         <WebsiteTracker onBack={() => setCurrentView('list')} />
+                    ) : currentView === 'serp' ? (
+                        <SerpSearch onBack={() => setCurrentView('list')} />
                     ) : currentView === 'list' ? (
                         <ProfileList
                             profiles={profiles}
@@ -208,6 +211,13 @@ const App = () => {
                         >
                             <TrendingUp size={18} />
                             <span className="text-[11px] font-medium uppercase tracking-widest text-muted group-hover:text-accent">Tracker</span>
+                        </button>
+                        <button
+                            onClick={() => setCurrentView('serp')}
+                            className="text-muted flex items-center gap-2.5 transition-all group hover:text-accent"
+                        >
+                            <Search size={18} />
+                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted group-hover:text-accent">SERP</span>
                         </button>
                     </div>
                 </footer>

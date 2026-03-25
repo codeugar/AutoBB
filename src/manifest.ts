@@ -20,7 +20,12 @@ export default defineManifest({
         },
     },
     permissions: ['storage', 'activeTab', 'clipboardWrite', 'contextMenus'],
-    host_permissions: ['https://generativelanguage.googleapis.com/*', 'https://data.similarweb.com/*'],
+    host_permissions: [
+        'https://generativelanguage.googleapis.com/*',
+        'https://data.similarweb.com/*',
+        'https://google.serper.dev/*',
+        'https://favicon.im/*',
+    ],
     background: {
         service_worker: 'src/background/index.ts',
         type: 'module',
@@ -30,6 +35,12 @@ export default defineManifest({
             matches: ['<all_urls>'],
             js: ['src/content/index.tsx'],
             run_at: 'document_end',
+        },
+    ],
+    web_accessible_resources: [
+        {
+            resources: ['src/serp/results/index.html', 'src/serp/domain/index.html'],
+            matches: ['<all_urls>'],
         },
     ],
 })

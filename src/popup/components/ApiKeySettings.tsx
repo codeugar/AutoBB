@@ -2,6 +2,22 @@ import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Save, CheckCircle, KeyRound, RotateCcw } from 'lucide-react';
 import { storage, DEFAULT_GEMINI_PROMPT } from '../../storage';
 
+const MiniToggle = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
+    <button
+        onClick={onToggle}
+        className={`
+            relative w-11 h-6 rounded-full transition-all duration-500 flex-shrink-0 border border-white/40
+            ${enabled ? 'accent-gradient shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'bg-white/40'}
+        `}
+    >
+        <div className={`
+            absolute top-1 w-4 h-4 rounded-full bg-white shadow-[0_2px_8px_rgba(6,78,59,0.25)]
+            transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
+            ${enabled ? 'translate-x-[20px]' : 'translate-x-1'}
+        `} />
+    </button>
+);
+
 interface ApiKeySettingsProps {
     onBack: () => void;
 }
@@ -14,13 +30,22 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
     const [prompt, setPrompt] = useState('');
     const [promptSaved, setPromptSaved] = useState(false);
 
+    const [serperKey, setSerperKey] = useState('');
+    const [serperRevealed, setSerperRevealed] = useState(false);
+    const [serperKeySaved, setSerperKeySaved] = useState(false);
+    const [mockMode, setMockMode] = useState(true);
+
     useEffect(() => {
         Promise.all([
             storage.getGeminiApiKey(),
             storage.getGeminiPrompt(),
-        ]).then(([key, p]) => {
+            storage.getSerperApiKey(),
+            storage.getSerpMockMode(),
+        ]).then(([key, p, sKey, mock]) => {
             if (key) setApiKey(key);
             setPrompt(p);
+            if (sKey) setSerperKey(sKey);
+            setMockMode(mock);
         });
     }, []);
 
@@ -38,6 +63,18 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
 
     const handleResetPrompt = () => {
         setPrompt(DEFAULT_GEMINI_PROMPT);
+    };
+
+    const handleSaveSerperKey = async () => {
+        await storage.setSerperApiKey(serperKey.trim());
+        setSerperKeySaved(true);
+        setTimeout(() => setSerperKeySaved(false), 3000);
+    };
+
+    const handleToggleMock = async () => {
+        const next = !mockMode;
+        setMockMode(next);
+        await storage.setSerpMockMode(next);
     };
 
     return (
@@ -165,6 +202,67 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         <li>Click "Get API key" → "Create API key"</li>
                         <li>Copy and paste it above</li>
                     </ol>
+                </div>
+
+                {/* Serper API Key */}
+                <div className="glass-card p-5 flex flex-col gap-4">
+                    <div>
+                        <p className="text-[13px] font-semibold text-heading mb-1">Serper API Key</p>
+                        <p className="text-[11px] text-muted leading-relaxed">
+                            Powers SERP analysis. Get a free key at{' '}
+                            <span className="text-accent font-semibold">serper.dev</span>
+                        </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                            <input
+                                type={serperRevealed ? 'text' : 'password'}
+                                value={serperKey}
+                                onChange={(e) => setSerperKey(e.target.value)}
+                                placeholder="Your Serper API key..."
+                                className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-white/50 border border-white/50 text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all"
+                            />
+                            <button
+                                onClick={() => setSerperRevealed((v) => !v)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors"
+                                tabIndex={-1}
+                                aria-label={serperRevealed ? 'Hide key' : 'Show key'}
+                            >
+                                {serperRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
+                            </button>
+                        </div>
+                        <button
+                            onClick={handleSaveSerperKey}
+                            disabled={!serperKey.trim()}
+                            className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        >
+                            {serperKeySaved ? <CheckCircle size={13} /> : <Save size={13} />}
+                            {serperKeySaved ? 'Saved' : 'Save'}
+                        </button>
+                    </div>
+
+                    {serperKeySaved && (
+                        <div className="flex items-center gap-2 text-accent text-[12px] font-medium animate-fade-in">
+                            <CheckCircle size={13} />
+                            API key saved successfully
+                        </div>
+                    )}
+
+                    <p className="text-[10px] text-muted/60">
+                        Free 2,500 queries/month — no credit card required
+                    </p>
+                </div>
+
+                {/* SERP Mock Mode */}
+                <div className="glass-card p-5 flex items-center justify-between gap-4">
+                    <div className="flex flex-col gap-1 min-w-0">
+                        <p className="text-[13px] font-semibold text-heading">SERP Mock Mode</p>
+                        <p className="text-[11px] text-muted leading-relaxed">
+                            Use simulated data for testing — no API key needed
+                        </p>
+                    </div>
+                    <MiniToggle enabled={mockMode} onToggle={handleToggleMock} />
                 </div>
             </main>
         </div>

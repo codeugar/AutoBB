@@ -1,7 +1,8 @@
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent';
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-export async function explainText(text: string, apiKey: string, prompt: string): Promise<string> {
-    const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+export async function explainText(text: string, apiKey: string, prompt: string, modelId: string): Promise<string> {
+    const url = `${GEMINI_BASE}/${modelId}:generateContent`;
+    const response = await fetch(`${url}?key=${apiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

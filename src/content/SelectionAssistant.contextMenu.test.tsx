@@ -10,6 +10,7 @@ vi.mock('../storage', () => ({
     storage: {
         getGeminiApiKey: vi.fn(),
         getGeminiPrompt: vi.fn(),
+        getGeminiModel: vi.fn(),
     },
 }));
 
@@ -24,6 +25,7 @@ describe('SelectionAssistant context-menu trigger', () => {
         messageListeners.length = 0;
         vi.mocked(storage.getGeminiApiKey).mockResolvedValue('demo-key');
         vi.mocked(storage.getGeminiPrompt).mockResolvedValue('Prompt: ');
+        vi.mocked(storage.getGeminiModel).mockResolvedValue('gemini-3.1-flash-lite-preview');
 
         Object.defineProperty(globalThis, 'chrome', {
             configurable: true,
@@ -71,7 +73,7 @@ describe('SelectionAssistant context-menu trigger', () => {
         expect(await screen.findByText('Asking Gemini...')).toBeTruthy();
 
         await waitFor(() => {
-            expect(explainText).toHaveBeenCalledWith('market wedge', 'demo-key', 'Prompt: ');
+            expect(explainText).toHaveBeenCalledWith('market wedge', 'demo-key', 'Prompt: ', expect.any(String));
         });
 
         await act(async () => {

@@ -110,7 +110,8 @@ const SelectionAssistant: React.FC = () => {
                 return;
             }
             const prompt = await storage.getGeminiPrompt();
-            const result = await explainText(normalized, apiKey, prompt);
+            const modelId = await storage.getGeminiModel();
+            const result = await explainText(normalized, apiKey, prompt, modelId);
             setExplanation(result);
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';

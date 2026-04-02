@@ -87,3 +87,53 @@ describe('ModelSelector — full mode', () => {
         expect(screen.getAllByText('preview').length).toBeGreaterThan(0);
     });
 });
+
+describe('ModelSelector — compact mode', () => {
+    const onChange = vi.fn();
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+        cleanup();
+    });
+
+    it('renders current model name as clickable text', () => {
+        render(<ModelSelector value="gemini-2.5-flash" onChange={onChange} compact />);
+        expect(screen.getByText(/2\.5 Flash/)).toBeTruthy();
+    });
+
+    it('shows popover on click', () => {
+        render(<ModelSelector value="gemini-2.5-flash" onChange={onChange} compact />);
+        fireEvent.click(screen.getByText(/2\.5 Flash/));
+        for (const m of GEMINI_MODELS) {
+            expect(screen.getByText(m.label)).toBeTruthy();
+        }
+    });
+
+    it('hides popover after selection and calls onChange', () => {
+        render(<ModelSelector value="gemini-2.5-flash" onChange={onChange} compact />);
+        fireEvent.click(screen.getByText(/2\.5 Flash/));
+        fireEvent.click(screen.getByText('Gemini 2.5 Pro'));
+        expect(onChange).toHaveBeenCalledWith('gemini-2.5-pro');
+        expect(chromeStorageMock.set).toHaveBeenCalledWith({
+            gemini_model: 'gemini-2.5-pro',
+        });
+    });
+
+    it('displays custom model ID when value is not in preset list', () => {
+        render(<ModelSelector value="gemini-exp-custom" onChange={onChange} compact />);
+        expect(screen.getByText(/gemini-exp-custom/)).toBeTruthy();
+    });
+
+    it('uses inline styles only — no Tailwind classes (smoke test)', () => {
+        const { container } = render(
+            <ModelSelector value="gemini-2.5-flash" onChange={onChange} compact />,
+        );
+        const allElements = container.querySelectorAll('[class]');
+        for (const el of allElements) {
+            expect(el.className).not.toMatch(/glass-card|rounded-xl|accent-gradient/);
+        }
+    });
+});

@@ -10,15 +10,170 @@ interface ModelSelectorProps {
 
 const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
     const [customModel, setCustomModel] = useState('');
-
-    if (compact) {
-        return null;
-    }
+    const [popoverOpen, setPopoverOpen] = useState(false);
 
     const handleSelect = (modelId: string) => {
         storage.setGeminiModel(modelId);
         onChange(modelId);
     };
+
+    /* ── Compact mode (inline styles only — Shadow DOM has no Tailwind) ── */
+    if (compact) {
+        const currentModel = GEMINI_MODELS.find((m) => m.id === value);
+        const displayName = currentModel
+            ? currentModel.label.replace(/^Gemini\s+/, '')
+            : value;
+
+        const handleCompactSelect = (modelId: string) => {
+            handleSelect(modelId);
+            setPopoverOpen(false);
+        };
+
+        const handleCompactCustom = () => {
+            const trimmed = customModel.trim();
+            if (!trimmed) return;
+            handleSelect(trimmed);
+            setCustomModel('');
+            setPopoverOpen(false);
+        };
+
+        return (
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+                {/* Trigger text */}
+                <span
+                    onClick={() => setPopoverOpen((o) => !o)}
+                    style={{
+                        color: 'rgba(255,255,255,0.8)',
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        userSelect: 'none',
+                    }}
+                >
+                    {displayName} ▾
+                </span>
+
+                {/* Popover */}
+                {popoverOpen && (
+                    <>
+                        {/* Click-outside overlay scoped to component */}
+                        <div
+                            onClick={() => setPopoverOpen(false)}
+                            style={{
+                                position: 'fixed',
+                                inset: 0,
+                                background: 'transparent',
+                                zIndex: 999,
+                            }}
+                        />
+
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: 0,
+                                marginTop: 6,
+                                width: 280,
+                                maxHeight: 280,
+                                overflowY: 'auto',
+                                background: 'rgba(255,255,255,0.85)',
+                                backdropFilter: 'blur(16px)',
+                                WebkitBackdropFilter: 'blur(16px)',
+                                borderRadius: 12,
+                                border: '1px solid rgba(255,255,255,0.5)',
+                                boxShadow: '0 12px 40px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08)',
+                                zIndex: 1000,
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                padding: 6,
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {GEMINI_MODELS.map((model) => (
+                                <div
+                                    key={model.id}
+                                    onClick={() => handleCompactSelect(model.id)}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        padding: '8px 10px',
+                                        borderRadius: 8,
+                                        cursor: 'pointer',
+                                        background: value === model.id
+                                            ? 'rgba(16,185,129,0.1)'
+                                            : 'transparent',
+                                    }}
+                                >
+                                    <span style={{ fontSize: 12, fontWeight: 600, color: '#1f2937' }}>
+                                        {model.label}
+                                    </span>
+                                    <span
+                                        style={{
+                                            fontSize: 9,
+                                            fontWeight: 600,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.05em',
+                                            padding: '2px 6px',
+                                            borderRadius: 99,
+                                            background: model.status === 'stable'
+                                                ? '#d1fae5'
+                                                : '#fef3c7',
+                                            color: model.status === 'stable'
+                                                ? '#047857'
+                                                : '#b45309',
+                                        }}
+                                    >
+                                        {model.status}
+                                    </span>
+                                </div>
+                            ))}
+
+                            {/* Divider */}
+                            <div style={{ height: 1, background: 'rgba(0,0,0,0.08)', margin: '4px 0' }} />
+
+                            {/* Custom model input */}
+                            <div style={{ display: 'flex', gap: 6, padding: '4px 4px 2px' }}>
+                                <input
+                                    type="text"
+                                    value={customModel}
+                                    onChange={(e) => setCustomModel(e.target.value)}
+                                    placeholder="Custom model ID"
+                                    style={{
+                                        flex: 1,
+                                        padding: '6px 8px',
+                                        borderRadius: 8,
+                                        border: '1px solid rgba(0,0,0,0.1)',
+                                        background: 'rgba(255,255,255,0.6)',
+                                        fontSize: 11,
+                                        fontFamily: 'monospace',
+                                        outline: 'none',
+                                        color: '#1f2937',
+                                    }}
+                                />
+                                <button
+                                    onClick={handleCompactCustom}
+                                    style={{
+                                        padding: '6px 12px',
+                                        borderRadius: 8,
+                                        border: 'none',
+                                        background: 'linear-gradient(135deg, #059669, #10b981)',
+                                        color: 'white',
+                                        fontSize: 11,
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Use
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    }
+
+    /* ── Full mode (Tailwind classes — popup context) ── */
 
     const handleUseCustom = () => {
         const trimmed = customModel.trim();

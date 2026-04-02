@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Save, CheckCircle, KeyRound, RotateCcw } from 'lucide-react';
 import { storage, DEFAULT_GEMINI_PROMPT } from '../../storage';
+import ModelSelector from './ModelSelector';
+import { DEFAULT_MODEL_ID } from '../../models';
 
 const MiniToggle = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
     <button
@@ -30,6 +32,8 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
     const [prompt, setPrompt] = useState('');
     const [promptSaved, setPromptSaved] = useState(false);
 
+    const [modelId, setModelId] = useState(DEFAULT_MODEL_ID);
+
     const [serperKey, setSerperKey] = useState('');
     const [serperRevealed, setSerperRevealed] = useState(false);
     const [serperKeySaved, setSerperKeySaved] = useState(false);
@@ -39,11 +43,13 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
         Promise.all([
             storage.getGeminiApiKey(),
             storage.getGeminiPrompt(),
+            storage.getGeminiModel(),
             storage.getSerperApiKey(),
             storage.getSerpMockMode(),
-        ]).then(([key, p, sKey, mock]) => {
+        ]).then(([key, p, model, sKey, mock]) => {
             if (key) setApiKey(key);
             setPrompt(p);
+            setModelId(model);
             if (sKey) setSerperKey(sKey);
             setMockMode(mock);
         });
@@ -148,6 +154,9 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         </div>
                     )}
                 </div>
+
+                {/* Model Selector */}
+                <ModelSelector value={modelId} onChange={setModelId} />
 
                 {/* Prompt */}
                 <div className="glass-card p-5 flex flex-col gap-4">

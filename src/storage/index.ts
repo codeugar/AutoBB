@@ -1,4 +1,5 @@
 import type { Profile, TrackedSite, TrafficSnapshot } from '../types';
+import { DEFAULT_MODEL_ID } from '../models';
 
 export const DEFAULT_GEMINI_PROMPT = `你是一个专为独立开发者和产品创始人服务的简洁助手。
 请先通过谷歌搜索了解这个词语的最新含义和用法，然后用2-3句话解释其含义。
@@ -16,6 +17,7 @@ const KEYS = {
     DISABLED_SITES: 'disabled_sites',
     GEMINI_API_KEY: 'gemini_api_key',
     GEMINI_PROMPT: 'gemini_prompt',
+    GEMINI_MODEL: 'gemini_model',
     TRACKED_SITES: 'tracked_sites',
     TRAFFIC_CACHE: 'traffic_cache',
 };
@@ -110,6 +112,15 @@ export const storage = {
 
     async setGeminiPrompt(prompt: string): Promise<void> {
         await chrome.storage.local.set({ [KEYS.GEMINI_PROMPT]: prompt });
+    },
+
+    async getGeminiModel(): Promise<string> {
+        const result = await chrome.storage.local.get(KEYS.GEMINI_MODEL);
+        return (result[KEYS.GEMINI_MODEL] as string) || DEFAULT_MODEL_ID;
+    },
+
+    async setGeminiModel(modelId: string): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.GEMINI_MODEL]: modelId });
     },
 
     async getTrackedSites(): Promise<TrackedSite[]> {

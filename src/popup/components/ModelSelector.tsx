@@ -137,6 +137,7 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                                     type="text"
                                     value={customModel}
                                     onChange={(e) => setCustomModel(e.target.value)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleCompactCustom(); }}
                                     placeholder="Custom model ID"
                                     style={{
                                         flex: 1,
@@ -178,8 +179,7 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
     const handleUseCustom = () => {
         const trimmed = customModel.trim();
         if (!trimmed) return;
-        storage.setGeminiModel(trimmed);
-        onChange(trimmed);
+        handleSelect(trimmed);
         setCustomModel('');
     };
 
@@ -241,6 +241,7 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                     type="text"
                     value={customModel}
                     onChange={(e) => setCustomModel(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleUseCustom(); }}
                     placeholder="Custom model ID"
                     className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/50 border border-white/50 text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all"
                 />

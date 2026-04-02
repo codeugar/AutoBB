@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Eye, EyeOff, Save, CheckCircle, KeyRound, RotateCcw } from 'lucide-react';
 import { storage, DEFAULT_GEMINI_PROMPT } from '../../storage';
+import ModelSelector from './ModelSelector';
+import { DEFAULT_MODEL_ID } from '../../models';
 
 interface ApiKeySettingsProps {
     onBack: () => void;
@@ -14,13 +16,17 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
     const [prompt, setPrompt] = useState('');
     const [promptSaved, setPromptSaved] = useState(false);
 
+    const [modelId, setModelId] = useState(DEFAULT_MODEL_ID);
+
     useEffect(() => {
         Promise.all([
             storage.getGeminiApiKey(),
             storage.getGeminiPrompt(),
-        ]).then(([key, p]) => {
+            storage.getGeminiModel(),
+        ]).then(([key, p, model]) => {
             if (key) setApiKey(key);
             setPrompt(p);
+            setModelId(model);
         });
     }, []);
 
@@ -111,6 +117,9 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         </div>
                     )}
                 </div>
+
+                {/* Model Selector */}
+                <ModelSelector value={modelId} onChange={setModelId} />
 
                 {/* Prompt */}
                 <div className="glass-card p-5 flex flex-col gap-4">

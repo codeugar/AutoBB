@@ -39,19 +39,25 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
     const [serperKeySaved, setSerperKeySaved] = useState(false);
     const [mockMode, setMockMode] = useState(true);
 
+    const [openRouterKey, setOpenRouterKey] = useState('');
+    const [openRouterRevealed, setOpenRouterRevealed] = useState(false);
+    const [openRouterKeySaved, setOpenRouterKeySaved] = useState(false);
+
     useEffect(() => {
         Promise.all([
             storage.getGeminiApiKey(),
             storage.getGeminiPrompt(),
-            storage.getGeminiModel(),
+            storage.getSelectedModel(),
             storage.getSerperApiKey(),
             storage.getSerpMockMode(),
-        ]).then(([key, p, model, sKey, mock]) => {
+            storage.getOpenRouterApiKey(),
+        ]).then(([key, p, model, sKey, mock, orKey]) => {
             if (key) setApiKey(key);
             setPrompt(p);
             setModelId(model);
             if (sKey) setSerperKey(sKey);
             setMockMode(mock);
+            if (orKey) setOpenRouterKey(orKey);
         });
     }, []);
 
@@ -59,6 +65,12 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
         await storage.setGeminiApiKey(apiKey.trim());
         setKeySaved(true);
         setTimeout(() => setKeySaved(false), 3000);
+    };
+
+    const handleSaveOpenRouterKey = async () => {
+        await storage.setOpenRouterApiKey(openRouterKey.trim());
+        setOpenRouterKeySaved(true);
+        setTimeout(() => setOpenRouterKeySaved(false), 3000);
     };
 
     const handleSavePrompt = async () => {
@@ -148,6 +160,52 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                     </div>
 
                     {keySaved && (
+                        <div className="flex items-center gap-2 text-accent text-[12px] font-medium animate-fade-in">
+                            <CheckCircle size={13} />
+                            API key saved successfully
+                        </div>
+                    )}
+                </div>
+
+                {/* OpenRouter API Key */}
+                <div className="glass-card p-5 flex flex-col gap-4">
+                    <div>
+                        <p className="text-[13px] font-semibold text-heading mb-1">OpenRouter API Key</p>
+                        <p className="text-[11px] text-muted leading-relaxed">
+                            Required for Perplexity models (Sonar, Sonar Pro, etc.). Get your key at{' '}
+                            <span className="text-accent font-semibold">openrouter.ai/keys</span>
+                        </p>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <div className="flex-1 relative">
+                            <input
+                                type={openRouterRevealed ? 'text' : 'password'}
+                                value={openRouterKey}
+                                onChange={(e) => setOpenRouterKey(e.target.value)}
+                                placeholder="sk-or-v1-..."
+                                className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-white/50 border border-white/50 text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all"
+                            />
+                            <button
+                                onClick={() => setOpenRouterRevealed((v) => !v)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors"
+                                tabIndex={-1}
+                                aria-label={openRouterRevealed ? 'Hide key' : 'Show key'}
+                            >
+                                {openRouterRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
+                            </button>
+                        </div>
+                        <button
+                            onClick={handleSaveOpenRouterKey}
+                            disabled={!openRouterKey.trim()}
+                            className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        >
+                            {openRouterKeySaved ? <CheckCircle size={13} /> : <Save size={13} />}
+                            {openRouterKeySaved ? 'Saved' : 'Save'}
+                        </button>
+                    </div>
+
+                    {openRouterKeySaved && (
                         <div className="flex items-center gap-2 text-accent text-[12px] font-medium animate-fade-in">
                             <CheckCircle size={13} />
                             API key saved successfully

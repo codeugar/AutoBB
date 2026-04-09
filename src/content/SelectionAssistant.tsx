@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Sparkles, X, Loader2 } from 'lucide-react';
 import { storage } from '../storage';
-import { explainText } from './gemini';
+import { explainSelection } from './explain';
 import { computeTooltipPosition, findAnchorRect } from './selectionAssistantPosition';
 import { findTextControlTarget, getTextControlSelection } from './textControlSelection';
 import {
@@ -98,7 +98,7 @@ const SelectionAssistant: React.FC = () => {
     }, [handleMouseUp, handleKeyDown]);
 
     useEffect(() => {
-        storage.getGeminiModel().then((m) => {
+        storage.getSelectedModel().then((m) => {
             setModelId(m);
             modelIdRef.current = m;
         });
@@ -123,14 +123,7 @@ const SelectionAssistant: React.FC = () => {
         setError('');
 
         try {
-            const apiKey = await storage.getGeminiApiKey();
-            if (!apiKey) {
-                setError('No API key configured. Go to AutoBB Settings to add your Gemini API key.');
-                setLoading(false);
-                return;
-            }
-            const prompt = await storage.getGeminiPrompt();
-            const result = await explainText(normalized, apiKey, prompt, currentModel);
+            const result = await explainSelection(normalized, currentModel);
             if (requestNonceRef.current !== nonce) return;
             setExplanation(result);
         } catch (err) {
@@ -300,7 +293,7 @@ const SelectionAssistant: React.FC = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#6b7280', fontSize: 13 }}>
                                     <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
                                     <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-                                    Asking Gemini...
+                                    Asking AI...
                                 </div>
                             )}
 

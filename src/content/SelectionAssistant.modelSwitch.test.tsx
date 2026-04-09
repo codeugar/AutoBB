@@ -3,18 +3,16 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EXPLAIN_SELECTION_MESSAGE_TYPE } from '../shared/explainSelection';
 import { storage } from '../storage';
-import { explainText } from './gemini';
+import { explainSelection } from './explain';
 
 vi.mock('../storage', () => ({
     storage: {
-        getGeminiApiKey: vi.fn(),
-        getGeminiPrompt: vi.fn(),
-        getGeminiModel: vi.fn(),
+        getSelectedModel: vi.fn(),
     },
 }));
 
-vi.mock('./gemini', () => ({
-    explainText: vi.fn(),
+vi.mock('./explain', () => ({
+    explainSelection: vi.fn(),
 }));
 
 vi.mock('../popup/components/ModelSelector', () => ({
@@ -34,9 +32,7 @@ describe('SelectionAssistant — model switching', () => {
 
     beforeEach(() => {
         messageListeners.length = 0;
-        vi.mocked(storage.getGeminiApiKey).mockResolvedValue('demo-key');
-        vi.mocked(storage.getGeminiPrompt).mockResolvedValue('Prompt: ');
-        vi.mocked(storage.getGeminiModel).mockResolvedValue('gemini-3.1-flash-lite-preview');
+        vi.mocked(storage.getSelectedModel).mockResolvedValue('gemini-3.1-flash-lite-preview');
 
         Object.defineProperty(globalThis, 'chrome', {
             configurable: true,
@@ -67,7 +63,7 @@ describe('SelectionAssistant — model switching', () => {
     });
 
     it('passes modelId to explainText when triggered via context menu', async () => {
-        vi.mocked(explainText).mockResolvedValue('Explained result');
+        vi.mocked(explainSelection).mockResolvedValue('Explained result');
 
         render(<SelectionAssistant />);
 
@@ -79,8 +75,8 @@ describe('SelectionAssistant — model switching', () => {
         });
 
         await waitFor(() => {
-            expect(explainText).toHaveBeenCalledWith(
-                'test term', 'demo-key', 'Prompt: ',
+            expect(explainSelection).toHaveBeenCalledWith(
+                'test term',
                 expect.any(String),
             );
         });
@@ -88,7 +84,7 @@ describe('SelectionAssistant — model switching', () => {
 
     it('discards stale response when a second request fires before first completes', async () => {
         let resolveFirst: (v: string) => void = () => {};
-        vi.mocked(explainText)
+        vi.mocked(explainSelection)
             .mockImplementationOnce(() => new Promise<string>((r) => { resolveFirst = r; }))
             .mockResolvedValueOnce('Second result');
 
@@ -101,7 +97,7 @@ describe('SelectionAssistant — model switching', () => {
             });
         });
 
-        expect(await screen.findByText('Asking Gemini...')).toBeTruthy();
+        expect(await screen.findByText('Asking AI...')).toBeTruthy();
 
         await act(async () => {
             messageListeners[0]({

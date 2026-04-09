@@ -25,6 +25,7 @@ export default defineManifest({
         'https://data.similarweb.com/*',
         'https://google.serper.dev/*',
         'https://favicon.im/*',
+        'https://openrouter.ai/*',
     ],
     background: {
         service_worker: 'src/background/index.ts',

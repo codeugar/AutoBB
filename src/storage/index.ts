@@ -1,4 +1,5 @@
 import type { Profile, TrackedSite, TrafficSnapshot } from '../types';
+import { DEFAULT_MODEL_ID } from '../models';
 
 export const DEFAULT_GEMINI_PROMPT = `你是一个专为独立开发者和产品创始人服务的简洁助手。
 请先通过谷歌搜索了解这个词语的最新含义和用法，然后用2-3句话解释其含义。
@@ -16,10 +17,13 @@ const KEYS = {
     DISABLED_SITES: 'disabled_sites',
     GEMINI_API_KEY: 'gemini_api_key',
     GEMINI_PROMPT: 'gemini_prompt',
+    GEMINI_MODEL: 'gemini_model',
     TRACKED_SITES: 'tracked_sites',
     TRAFFIC_CACHE: 'traffic_cache',
     SERPER_API_KEY: 'serper_api_key',
     SERP_MOCK_MODE: 'serp_mock_mode',
+    SELECTED_MODEL: 'selected_model',
+    OPENROUTER_API_KEY: 'openrouter_api_key',
 };
 
 export const storage = {
@@ -112,6 +116,41 @@ export const storage = {
 
     async setGeminiPrompt(prompt: string): Promise<void> {
         await chrome.storage.local.set({ [KEYS.GEMINI_PROMPT]: prompt });
+    },
+
+    async getSelectedModel(): Promise<string> {
+        const result = await chrome.storage.local.get([KEYS.SELECTED_MODEL, KEYS.GEMINI_MODEL]);
+        const selected = result[KEYS.SELECTED_MODEL] as string | undefined;
+        if (selected) return selected;
+        const legacy = result[KEYS.GEMINI_MODEL] as string | undefined;
+        if (legacy) {
+            await chrome.storage.local.set({ [KEYS.SELECTED_MODEL]: legacy });
+            return legacy;
+        }
+        return DEFAULT_MODEL_ID;
+    },
+
+    async setSelectedModel(modelId: string): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.SELECTED_MODEL]: modelId });
+    },
+
+    async getOpenRouterApiKey(): Promise<string> {
+        const result = await chrome.storage.local.get(KEYS.OPENROUTER_API_KEY);
+        return (result[KEYS.OPENROUTER_API_KEY] as string) || '';
+    },
+
+    async setOpenRouterApiKey(key: string): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.OPENROUTER_API_KEY]: key });
+    },
+
+    /** @deprecated Use getSelectedModel */
+    async getGeminiModel(): Promise<string> {
+        return this.getSelectedModel();
+    },
+
+    /** @deprecated Use setSelectedModel */
+    async setGeminiModel(modelId: string): Promise<void> {
+        return this.setSelectedModel(modelId);
     },
 
     async getTrackedSites(): Promise<TrackedSite[]> {

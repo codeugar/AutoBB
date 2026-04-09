@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Sparkles, X, Loader2 } from 'lucide-react';
 import { storage } from '../storage';
-import { explainText } from './gemini';
+import { explainSelection } from './explain';
 import { computeTooltipPosition, findAnchorRect } from './selectionAssistantPosition';
 import { findTextControlTarget, getTextControlSelection } from './textControlSelection';
 import {
@@ -9,6 +9,8 @@ import {
     normalizeSelectionText,
     type ExplainSelectionMessage,
 } from '../shared/explainSelection';
+import ModelSelector from '../popup/components/ModelSelector';
+import { DEFAULT_MODEL_ID } from '../models';
 
 interface TooltipPos {
     left: number;
@@ -22,6 +24,11 @@ const SelectionAssistant: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [explanation, setExplanation] = useState('');
     const [error, setError] = useState('');
+    const [modelId, setModelId] = useState(DEFAULT_MODEL_ID);
+    const modelIdRef = useRef(DEFAULT_MODEL_ID);
+    const requestNonceRef = useRef(0);
+    const panelOpenRef = useRef(false);
+    const selectedTextRef = useRef('');
 
     const handleMouseUp = useCallback((e: MouseEvent) => {
         // Don't interfere with clicks inside our own UI
@@ -90,9 +97,22 @@ const SelectionAssistant: React.FC = () => {
         };
     }, [handleMouseUp, handleKeyDown]);
 
-    const startExplanation = useCallback(async (text: string) => {
+    useEffect(() => {
+        storage.getSelectedModel().then((m) => {
+            setModelId(m);
+            modelIdRef.current = m;
+        });
+    }, []);
+
+    useEffect(() => { panelOpenRef.current = panelOpen; }, [panelOpen]);
+    useEffect(() => { selectedTextRef.current = selectedText; }, [selectedText]);
+
+    const startExplanation = useCallback(async (text: string, overrideModelId?: string) => {
         const normalized = normalizeSelectionText(text);
         if (!normalized) return;
+
+        const currentModel = overrideModelId ?? modelIdRef.current;
+        const nonce = ++requestNonceRef.current;
 
         window.getSelection()?.removeAllRanges();
         setSelectedText(normalized);
@@ -103,22 +123,25 @@ const SelectionAssistant: React.FC = () => {
         setError('');
 
         try {
-            const apiKey = await storage.getGeminiApiKey();
-            if (!apiKey) {
-                setError('No API key configured. Go to AutoBB Settings to add your Gemini API key.');
-                setLoading(false);
-                return;
-            }
-            const prompt = await storage.getGeminiPrompt();
-            const result = await explainText(normalized, apiKey, prompt);
+            const result = await explainSelection(normalized, currentModel);
+            if (requestNonceRef.current !== nonce) return;
             setExplanation(result);
         } catch (err) {
+            if (requestNonceRef.current !== nonce) return;
             const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.';
             setError(msg);
         } finally {
-            setLoading(false);
+            if (requestNonceRef.current === nonce) setLoading(false);
         }
     }, []);
+
+    const handleModelSwitch = useCallback((newModelId: string) => {
+        setModelId(newModelId);
+        modelIdRef.current = newModelId;
+        if (panelOpenRef.current && selectedTextRef.current) {
+            startExplanation(selectedTextRef.current, newModelId);
+        }
+    }, [startExplanation]);
 
     useEffect(() => {
         const handleRuntimeMessage = (message: unknown) => {
@@ -220,11 +243,13 @@ const SelectionAssistant: React.FC = () => {
                                 justifyContent: 'space-between',
                             }}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
                                 <Sparkles size={16} color="white" />
                                 <span style={{ color: 'white', fontWeight: 700, fontSize: 13, letterSpacing: '-0.01em' }}>
                                     AI Explain
                                 </span>
+                                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>·</span>
+                                <ModelSelector value={modelId} onChange={handleModelSwitch} compact />
                             </div>
                             <button
                                 onClick={closePanel}
@@ -268,7 +293,7 @@ const SelectionAssistant: React.FC = () => {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#6b7280', fontSize: 13 }}>
                                     <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
                                     <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-                                    Asking Gemini...
+                                    Asking AI...
                                 </div>
                             )}
 

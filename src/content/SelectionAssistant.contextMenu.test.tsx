@@ -4,17 +4,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import SelectionAssistant from './SelectionAssistant';
 import { EXPLAIN_SELECTION_MESSAGE_TYPE } from '../shared/explainSelection';
 import { storage } from '../storage';
-import { explainText } from './gemini';
+import { explainSelection } from './explain';
 
 vi.mock('../storage', () => ({
     storage: {
-        getGeminiApiKey: vi.fn(),
-        getGeminiPrompt: vi.fn(),
+        getSelectedModel: vi.fn(),
     },
 }));
 
-vi.mock('./gemini', () => ({
-    explainText: vi.fn(),
+vi.mock('./explain', () => ({
+    explainSelection: vi.fn(),
 }));
 
 describe('SelectionAssistant context-menu trigger', () => {
@@ -22,8 +21,7 @@ describe('SelectionAssistant context-menu trigger', () => {
 
     beforeEach(() => {
         messageListeners.length = 0;
-        vi.mocked(storage.getGeminiApiKey).mockResolvedValue('demo-key');
-        vi.mocked(storage.getGeminiPrompt).mockResolvedValue('Prompt: ');
+        vi.mocked(storage.getSelectedModel).mockResolvedValue('gemini-3.1-flash-lite-preview');
 
         Object.defineProperty(globalThis, 'chrome', {
             configurable: true,
@@ -49,7 +47,7 @@ describe('SelectionAssistant context-menu trigger', () => {
 
     it('opens the explainer panel and asks Gemini when triggered from the context menu', async () => {
         let resolveExplain = (_value: string) => {};
-        vi.mocked(explainText).mockImplementation(
+        vi.mocked(explainSelection).mockImplementation(
             () =>
                 new Promise<string>((resolve) => {
                     resolveExplain = resolve;
@@ -68,10 +66,10 @@ describe('SelectionAssistant context-menu trigger', () => {
         });
 
         expect(await screen.findByText('"market wedge"')).toBeTruthy();
-        expect(await screen.findByText('Asking Gemini...')).toBeTruthy();
+        expect(await screen.findByText('Asking AI...')).toBeTruthy();
 
         await waitFor(() => {
-            expect(explainText).toHaveBeenCalledWith('market wedge', 'demo-key', 'Prompt: ');
+            expect(explainSelection).toHaveBeenCalledWith('market wedge', 'gemini-3.1-flash-lite-preview');
         });
 
         await act(async () => {

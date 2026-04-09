@@ -3,7 +3,7 @@ import { defineManifest } from '@crxjs/vite-plugin'
 export default defineManifest({
     name: 'AutoBB',
     description: 'Auto-fill submission forms and analyze SERP rankings with domain metrics',
-    version: '1.2.0',
+    version: '1.3.0',
     manifest_version: 3,
     icons: {
         '16': 'icon16.png',
@@ -25,6 +25,7 @@ export default defineManifest({
         'https://data.similarweb.com/*',
         'https://google.serper.dev/*',
         'https://favicon.im/*',
+        'https://openrouter.ai/*',
     ],
     background: {
         service_worker: 'src/background/index.ts',

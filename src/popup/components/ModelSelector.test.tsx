@@ -18,7 +18,7 @@ vi.stubGlobal('chrome', {
 });
 
 import ModelSelector from './ModelSelector';
-import { GEMINI_MODELS } from '../../models';
+import { GEMINI_MODELS, ALL_MODELS } from '../../models';
 
 describe('ModelSelector — full mode', () => {
     const onChange = vi.fn();
@@ -54,7 +54,7 @@ describe('ModelSelector — full mode', () => {
         expect(onChange).toHaveBeenCalledWith('gemini-2.5-pro');
         // Verify internal storage save (spec requirement)
         expect(chromeStorageMock.set).toHaveBeenCalledWith({
-            gemini_model: 'gemini-2.5-pro',
+            selected_model: 'gemini-2.5-pro',
         });
     });
 
@@ -71,7 +71,7 @@ describe('ModelSelector — full mode', () => {
 
         expect(onChange).toHaveBeenCalledWith('gemini-exp-custom');
         expect(chromeStorageMock.set).toHaveBeenCalledWith({
-            gemini_model: 'gemini-exp-custom',
+            selected_model: 'gemini-exp-custom',
         });
     });
 
@@ -85,6 +85,19 @@ describe('ModelSelector — full mode', () => {
         render(<ModelSelector value="gemini-2.5-flash" onChange={onChange} />);
         expect(screen.getAllByText('stable').length).toBeGreaterThan(0);
         expect(screen.getAllByText('preview').length).toBeGreaterThan(0);
+    });
+
+    it('renders provider group headers', () => {
+        render(<ModelSelector value="gemini-2.5-flash" onChange={onChange} />);
+        expect(screen.getByText('Gemini')).toBeTruthy();
+        expect(screen.getByText('OpenRouter — Perplexity')).toBeTruthy();
+    });
+
+    it('renders all models from both providers', () => {
+        render(<ModelSelector value="gemini-2.5-flash" onChange={onChange} />);
+        for (const m of ALL_MODELS) {
+            expect(screen.getByText(m.label)).toBeTruthy();
+        }
     });
 });
 
@@ -118,7 +131,7 @@ describe('ModelSelector — compact mode', () => {
         fireEvent.click(screen.getByText('Gemini 2.5 Pro'));
         expect(onChange).toHaveBeenCalledWith('gemini-2.5-pro');
         expect(chromeStorageMock.set).toHaveBeenCalledWith({
-            gemini_model: 'gemini-2.5-pro',
+            selected_model: 'gemini-2.5-pro',
         });
     });
 
@@ -135,5 +148,23 @@ describe('ModelSelector — compact mode', () => {
         for (const el of allElements) {
             expect(el.className).not.toMatch(/glass-card|rounded-xl|accent-gradient/);
         }
+    });
+
+    it('shows all models from both providers in popover', () => {
+        render(<ModelSelector value="gemini-2.5-flash" onChange={onChange} compact />);
+        fireEvent.click(screen.getByText(/2\.5 Flash/));
+        for (const m of ALL_MODELS) {
+            expect(screen.getAllByText(m.label).length).toBeGreaterThan(0);
+        }
+    });
+
+    it('shows shortened label for Gemini models in compact trigger', () => {
+        render(<ModelSelector value="gemini-2.5-flash" onChange={onChange} compact />);
+        expect(screen.getByText(/2\.5 Flash/)).toBeTruthy();
+    });
+
+    it('shows full label for OpenRouter models in compact trigger', () => {
+        render(<ModelSelector value="perplexity/sonar" onChange={onChange} compact />);
+        expect(screen.getByText(/Sonar/)).toBeTruthy();
     });
 });

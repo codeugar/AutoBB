@@ -22,6 +22,8 @@ const KEYS = {
     TRAFFIC_CACHE: 'traffic_cache',
     SERPER_API_KEY: 'serper_api_key',
     SERP_MOCK_MODE: 'serp_mock_mode',
+    SELECTED_MODEL: 'selected_model',
+    OPENROUTER_API_KEY: 'openrouter_api_key',
 };
 
 export const storage = {
@@ -116,13 +118,39 @@ export const storage = {
         await chrome.storage.local.set({ [KEYS.GEMINI_PROMPT]: prompt });
     },
 
-    async getGeminiModel(): Promise<string> {
-        const result = await chrome.storage.local.get(KEYS.GEMINI_MODEL);
-        return (result[KEYS.GEMINI_MODEL] as string) || DEFAULT_MODEL_ID;
+    async getSelectedModel(): Promise<string> {
+        const result = await chrome.storage.local.get([KEYS.SELECTED_MODEL, KEYS.GEMINI_MODEL]);
+        const selected = result[KEYS.SELECTED_MODEL] as string | undefined;
+        if (selected) return selected;
+        const legacy = result[KEYS.GEMINI_MODEL] as string | undefined;
+        if (legacy) {
+            await chrome.storage.local.set({ [KEYS.SELECTED_MODEL]: legacy });
+            return legacy;
+        }
+        return DEFAULT_MODEL_ID;
     },
 
+    async setSelectedModel(modelId: string): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.SELECTED_MODEL]: modelId });
+    },
+
+    async getOpenRouterApiKey(): Promise<string> {
+        const result = await chrome.storage.local.get(KEYS.OPENROUTER_API_KEY);
+        return (result[KEYS.OPENROUTER_API_KEY] as string) || '';
+    },
+
+    async setOpenRouterApiKey(key: string): Promise<void> {
+        await chrome.storage.local.set({ [KEYS.OPENROUTER_API_KEY]: key });
+    },
+
+    /** @deprecated Use getSelectedModel */
+    async getGeminiModel(): Promise<string> {
+        return this.getSelectedModel();
+    },
+
+    /** @deprecated Use setSelectedModel */
     async setGeminiModel(modelId: string): Promise<void> {
-        await chrome.storage.local.set({ [KEYS.GEMINI_MODEL]: modelId });
+        return this.setSelectedModel(modelId);
     },
 
     async getTrackedSites(): Promise<TrackedSite[]> {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import type { Profile, Screenshot } from '../../types';
 import { ArrowLeft, Trash2, X, ChevronDown, Layout, Type, ListTree } from 'lucide-react';
 import { parseUserCases } from '../utils/userCases';
@@ -8,13 +8,14 @@ const generateId = () => Math.random().toString(36).substr(2, 9);
 interface Props {
     profile: Profile | null;
     onSave: (profile: Profile) => void;
+    onAutoSave?: (profile: Profile) => void;
     onCancel: () => void;
     onDelete: (id: string) => void;
 }
 
 const FieldGroup = ({ label, forId, children }: { label: string; forId?: string; children: React.ReactNode }) => (
-    <div className="space-y-4">
-        <label htmlFor={forId} className="text-[11px] font-semibold uppercase tracking-[0.3em] text-muted block px-2">{label}</label>
+    <div className="space-y-2.5">
+        <label htmlFor={forId} className="text-[10px] font-semibold uppercase tracking-[0.22em] text-muted block px-1">{label}</label>
         {children}
     </div>
 );
@@ -22,8 +23,8 @@ const FieldGroup = ({ label, forId, children }: { label: string; forId?: string;
 const DesignerInput = ({ ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input
         {...props}
-        className="w-full h-16 glass-input rounded-[20px] px-6 text-[15px] font-medium text-primary placeholder-[rgba(6,78,59,0.35)]
-                 transition-all duration-300 outline-none hover:border-white/60 focus:border-[rgba(16,185,129,0.6)] focus:ring-8 focus:ring-[rgba(16,185,129,0.15)]"
+        className="w-full h-12 bg-white/[0.06] border border-[rgba(255,255,255,0.08)] rounded-none px-4 text-[13px] font-medium text-primary placeholder-[rgba(210,218,230,0.35)]
+                 transition-all duration-300 outline-none hover:bg-white/[0.10] focus:border-[rgba(136,224,156,0.45)] focus:ring-4 focus:ring-[rgba(136,224,156,0.12)]"
     />
 );
 
@@ -31,8 +32,8 @@ const DesignerTextArea = ({ rows = 4, ...props }: React.TextareaHTMLAttributes<H
     <textarea
         rows={rows}
         {...props}
-        className="w-full glass-input rounded-[24px] px-6 py-5 text-[15px] font-medium text-primary placeholder-[rgba(6,78,59,0.35)]
-                 transition-all duration-300 outline-none resize-none hover:border-white/60 focus:border-[rgba(16,185,129,0.6)] focus:ring-8 focus:ring-[rgba(16,185,129,0.15)]"
+        className="w-full bg-white/[0.06] border border-[rgba(255,255,255,0.08)] rounded-none px-4 py-3 text-[13px] leading-5 font-medium text-primary placeholder-[rgba(210,218,230,0.35)]
+                 transition-all duration-300 outline-none resize-none hover:bg-white/[0.10] focus:border-[rgba(136,224,156,0.45)] focus:ring-4 focus:ring-[rgba(136,224,156,0.12)]"
     />
 );
 
@@ -40,16 +41,16 @@ const DesignerSelect = ({ options, ...props }: { options: { value: string; label
     <div className="relative group">
         <select
             {...props}
-            className="w-full h-16 glass-input rounded-[20px] px-6 text-[15px] font-medium text-primary appearance-none cursor-pointer
-                     transition-all duration-300 outline-none hover:border-white/60 focus:border-[rgba(16,185,129,0.6)] focus:ring-8 focus:ring-[rgba(16,185,129,0.15)]"
+            className="w-full h-12 bg-white/[0.06] border border-[rgba(255,255,255,0.08)] rounded-none px-4 text-[13px] font-medium text-primary appearance-none cursor-pointer
+                     transition-all duration-300 outline-none hover:bg-white/[0.10] focus:border-[rgba(136,224,156,0.45)] focus:ring-4 focus:ring-[rgba(136,224,156,0.12)]"
         >
-            {options.map(opt => <option key={opt.value} value={opt.value} className="bg-white text-primary">{opt.label}</option>)}
+            {options.map(opt => <option key={opt.value} value={opt.value} className="bg-[#0F1411] text-primary">{opt.label}</option>)}
         </select>
-        <ChevronDown size={18} className="absolute right-6 top-1/2 -translate-y-1/2 text-muted pointer-events-none group-hover:text-muted-strong transition-colors" />
+        <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none group-hover:text-muted-strong transition-colors" />
     </div>
 );
 
-const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete }) => {
+const ProfileEditor: React.FC<Props> = ({ profile, onSave, onAutoSave, onCancel, onDelete }) => {
     const MAX_LOGO_SIZE = 500 * 1024; // 500KB
     const MAX_SCREENSHOT_SIZE = 1024 * 1024; // 1MB
     const MAX_SCREENSHOTS = 5;
@@ -73,16 +74,26 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
     const [screenshots, setScreenshots] = useState<Screenshot[]>(profile?.screenshots || []);
     const [logoError, setLogoError] = useState<string | null>(null);
     const [screenshotError, setScreenshotError] = useState<string | null>(null);
+    const formDataRef = useRef(formData);
+
+    const updateFormData = (updater: (prev: Profile) => Profile) => {
+        const next = updater(formDataRef.current);
+        formDataRef.current = next;
+        setFormData(next);
+        onAutoSave?.(next);
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        updateFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const handleFeatureChange = (index: number, value: string) => {
-        const newFeatures = [...formData.features];
-        newFeatures[index] = value;
-        setFormData(prev => ({ ...prev, features: newFeatures }));
+        updateFormData(prev => {
+            const features = [...prev.features];
+            features[index] = value;
+            return { ...prev, features };
+        });
     };
 
     const [userCasesText, setUserCasesText] = useState<string>(
@@ -94,11 +105,11 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
         const limitedText = lines.slice(0, 5).join('\n');
         setUserCasesText(limitedText);
         const parsed = parseUserCases(limitedText);
-        setFormData(prev => ({ ...prev, userCases: parsed }));
+        updateFormData(prev => ({ ...prev, userCases: parsed }));
     };
 
-    const addFeature = () => setFormData(prev => ({ ...prev, features: [...prev.features, ''] }));
-    const removeFeature = (index: number) => setFormData(prev => ({ ...prev, features: formData.features.length > 1 ? formData.features.filter((_, i) => i !== index) : [''] }));
+    const addFeature = () => updateFormData(prev => ({ ...prev, features: [...prev.features, ''] }));
+    const removeFeature = (index: number) => updateFormData(prev => ({ ...prev, features: prev.features.length > 1 ? prev.features.filter((_, i) => i !== index) : [''] }));
 
     const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -114,7 +125,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
         reader.onload = () => {
             const base64 = reader.result as string;
             setLogoPreview(base64);
-            setFormData(prev => ({ ...prev, logoBase64: base64 }));
+            updateFormData(prev => ({ ...prev, logoBase64: base64 }));
         };
         reader.readAsDataURL(file);
     };
@@ -154,7 +165,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 setScreenshotError(null);
                 const newScreenshot: Screenshot = { base64 };
                 setScreenshots(prev => [...prev, newScreenshot]);
-                setFormData(prev => ({
+                updateFormData(prev => ({
                     ...prev,
                     screenshots: [...(prev.screenshots || []), newScreenshot]
                 }));
@@ -165,7 +176,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
 
     const removeScreenshot = (index: number) => {
         setScreenshots(prev => prev.filter((_, i) => i !== index));
-        setFormData(prev => ({
+        updateFormData(prev => ({
             ...prev,
             screenshots: (prev.screenshots || []).filter((_, i) => i !== index)
         }));
@@ -175,48 +186,45 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
 
     return (
         <div className="flex flex-col w-full animate-fade-in text-primary">
-            {/* Elegant Fixed Header */}
-            <div className="flex-shrink-0 px-8 py-8 flex items-center justify-between border-b border-white/50 bg-white/60 backdrop-blur-xl z-20 rounded-t-[32px]">
-                <div className="flex items-center gap-5">
-                    <button onClick={onCancel} aria-label="Go back" className="w-12 h-12 flex items-center justify-center glass-card text-muted hover:text-heading rounded-2xl transition-all border border-white/50 hover:scale-105 active:scale-90">
-                        <ArrowLeft size={22} />
+            <div className="flex-shrink-0 px-6 py-5 flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] bg-white/[0.06] backdrop-blur-xl z-20">
+                <div className="flex items-center gap-3">
+                    <button onClick={onCancel} aria-label="Go back" className="w-10 h-10 flex items-center justify-center bg-white/[0.06] border border-[rgba(255,255,255,0.08)] text-muted hover:text-heading rounded-none transition-all hover:scale-105 active:scale-95">
+                        <ArrowLeft size={18} />
                     </button>
                     <div>
-                        <h1 className="text-lg font-black text-heading leading-tight">
+                        <h1 className="text-[17px] font-semibold text-heading leading-tight">
                             {profile ? 'Modify' : 'Create'}
                         </h1>
-                        <p className="text-[11px] text-muted font-medium uppercase mt-1 tracking-[0.2em]">Project details</p>
+                        <p className="text-[11px] text-muted font-medium mt-1">Project details</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                     {profile && (
-                        <button onClick={() => onDelete(profile.id)} aria-label="Delete profile" className="w-12 h-12 flex items-center justify-center text-muted hover:text-[var(--color-error-text)] hover:bg-[var(--color-error-bg)] rounded-2xl transition-all">
-                            <Trash2 size={20} />
+                        <button onClick={() => onDelete(profile.id)} aria-label="Delete profile" className="w-10 h-10 flex items-center justify-center text-muted hover:text-[var(--color-error-text)] hover:bg-[var(--color-error-bg)] rounded-none transition-all">
+                            <Trash2 size={17} />
                         </button>
                     )}
                     <button
                         onClick={() => onSave(formData)}
-                        className="h-12 px-6 accent-gradient text-white font-semibold text-[13px] uppercase tracking-widest rounded-2xl shadow-[0_10px_24px_rgba(16,185,129,0.3)] hover:scale-105 active:scale-95 transition-all"
+                        className="h-10 px-4 accent-gradient text-white font-semibold text-[12px] rounded-none shadow-[0_10px_24px_rgba(136,224,156,0.22)] hover:scale-105 active:scale-95 transition-all"
                     >
                         Save
                     </button>
                 </div>
             </div>
 
-            {/* Generous Vertical Form */}
-            <div className="px-8 py-10 space-y-12 pb-32">
+            <div className="px-6 py-7 space-y-8 pb-24">
 
-                {/* Block: Identity */}
-                <section className="space-y-8">
-                    <div className="flex items-center gap-4 text-accent">
-                        <Layout size={18} strokeWidth={3} />
-                        <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">Identity</h2>
+                <section className="space-y-5">
+                    <div className="flex items-center gap-3 text-accent">
+                        <Layout size={16} strokeWidth={2.5} />
+                        <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em]">Identity</h2>
                     </div>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <FieldGroup label="Product Name" forId="field-name">
                             <DesignerInput id="field-name" name="name" value={formData.name} onChange={handleChange} placeholder="The name of your tool" required />
                         </FieldGroup>
-                        <div className="grid grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 gap-4">
                             <FieldGroup label="Category" forId="field-category">
                                 <DesignerInput id="field-category" name="category" value={formData.category} onChange={handleChange} placeholder="e.g. Artificial Intelligence" />
                             </FieldGroup>
@@ -239,12 +247,12 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 </section>
 
                 {/* Block: Pitch */}
-                <section className="space-y-8">
-                    <div className="flex items-center gap-4 text-accent">
-                        <Type size={18} strokeWidth={3} />
-                        <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">Marketing</h2>
+                <section className="space-y-5">
+                    <div className="flex items-center gap-3 text-accent">
+                        <Type size={16} strokeWidth={2.5} />
+                        <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em]">Marketing</h2>
                     </div>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <FieldGroup label="Short Tagline" forId="field-title">
                             <DesignerInput id="field-title" name="title" value={formData.title} onChange={handleChange} placeholder="Hook your audience" />
                         </FieldGroup>
@@ -258,17 +266,17 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 </section>
 
                 {/* Block: Key Features */}
-                <section className="space-y-8">
+                <section className="space-y-5">
                     <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-4 text-accent">
-                            <ListTree size={18} strokeWidth={3} />
-                            <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">Features</h2>
+                        <div className="flex items-center gap-3 text-accent">
+                            <ListTree size={16} strokeWidth={2.5} />
+                            <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em]">Features</h2>
                         </div>
-                        <button type="button" onClick={addFeature} className="accent-gradient text-white px-4 py-2 rounded-xl text-[11px] font-semibold uppercase tracking-widest transition-all shadow-[0_10px_24px_rgba(16,185,129,0.3)]">
+                        <button type="button" onClick={addFeature} className="accent-gradient text-white px-3 py-1.5 rounded-none text-[11px] font-semibold transition-all shadow-[0_10px_24px_rgba(136,224,156,0.20)]">
                             Add Key
                         </button>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {formData.features.map((feature, idx) => (
                             <div key={idx} className="group flex gap-4 items-center animate-slide-up" style={{ animationDelay: `${idx * 100}ms` }}>
                                 <div className="flex-1 relative">
@@ -281,8 +289,8 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                         aria-label={`Feature ${idx + 1}`}
                                     />
                                     {formData.features.length > 1 && (
-                                        <button onClick={() => removeFeature(idx)} aria-label={`Remove feature ${idx + 1}`} className="absolute right-6 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 text-muted hover:text-[var(--color-error-text)] transition-all">
-                                            <X size={20} />
+                                        <button onClick={() => removeFeature(idx)} aria-label={`Remove feature ${idx + 1}`} className="absolute right-3 top-1/2 -translate-y-1/2 p-2 opacity-0 group-hover:opacity-100 text-muted hover:text-[var(--color-error-text)] transition-all">
+                                            <X size={16} />
                                         </button>
                                     )}
                                 </div>
@@ -292,17 +300,17 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 </section>
 
                 {/* Block: User Cases */}
-                <section className="space-y-8">
+                <section className="space-y-5">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 text-accent">
-                            <ListTree size={18} strokeWidth={3} />
-                            <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">User Cases</h2>
+                        <div className="flex items-center gap-3 text-accent">
+                            <ListTree size={16} strokeWidth={2.5} />
+                            <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em]">User Cases</h2>
                         </div>
-                        <span className="text-[11px] text-muted font-medium uppercase tracking-[0.3em]">
+                        <span className="text-[11px] text-muted font-medium">
                             {userCasesCount}/5
                         </span>
                     </div>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <FieldGroup label="User Cases (one per line, max 5)" forId="field-user-cases">
                             <DesignerTextArea
                                 id="field-user-cases"
@@ -317,19 +325,19 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                 </section>
 
                 {/* Block: Images */}
-                <section className="space-y-8">
-                    <div className="flex items-center gap-4 text-accent">
-                        <Layout size={18} strokeWidth={3} />
-                        <h2 className="text-[12px] font-semibold uppercase tracking-[0.4em]">Images</h2>
+                <section className="space-y-5">
+                    <div className="flex items-center gap-3 text-accent">
+                        <Layout size={16} strokeWidth={2.5} />
+                        <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em]">Images</h2>
                     </div>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                         <FieldGroup label="Logo" forId="field-logo-file">
                             <div className="flex items-center gap-4">
                                 {logoPreview && (
                                     <img
                                         src={logoPreview}
                                         alt="Logo preview"
-                                        className="w-16 h-16 rounded-2xl object-cover border border-white/30 shadow-sm"
+                                        className="w-16 h-16 rounded-none object-cover border border-white/30 shadow-sm"
                                     />
                                 )}
                                 <input
@@ -337,7 +345,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                     type="file"
                                     accept="image/*"
                                     onChange={handleLogoUpload}
-                                    className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-white/20 file:text-primary hover:file:bg-white/30"
+                                    className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-xs file:bg-white/[0.08] file:text-primary hover:file:bg-white/[0.06]"
                                 />
                             </div>
                             {logoError && (
@@ -360,7 +368,7 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                 accept="image/*"
                                 multiple
                                 onChange={handleScreenshotUpload}
-                                className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:bg-white/20 file:text-primary hover:file:bg-white/30"
+                                className="text-xs text-muted file:mr-2 file:py-2 file:px-4 file:rounded-none file:border-0 file:text-xs file:bg-white/[0.08] file:text-primary hover:file:bg-white/[0.06]"
                             />
                             {screenshotError && (
                                 <p role="alert" className="text-xs text-[var(--color-error-text)] px-2 mt-1">{screenshotError}</p>
@@ -373,13 +381,13 @@ const ProfileEditor: React.FC<Props> = ({ profile, onSave, onCancel, onDelete })
                                                 <img
                                                     src={shot.base64}
                                                     alt={`Screenshot ${i + 1}`}
-                                                    className="w-20 h-20 rounded-2xl object-cover border border-white/30"
+                                                    className="w-20 h-20 rounded-none object-cover border border-white/30"
                                                 />
                                             )}
                                             <button
                                                 type="button"
                                                 onClick={() => removeScreenshot(i)}
-                                                className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--color-error)] rounded-full text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                                className="absolute -top-2 -right-2 w-6 h-6 bg-[var(--color-error)] rounded-none text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                                                 aria-label={`Remove screenshot ${i + 1}`}
                                             >
                                                 ×

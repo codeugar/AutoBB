@@ -69,7 +69,7 @@ const Sparkline = ({ data }: { data: { date: string; visits: number }[] }) => {
     const positive = values[values.length - 1] >= values[0];
     return (
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} className="overflow-visible flex-shrink-0">
-            <polyline points={pts.join(' ')} fill="none" stroke={positive ? '#10B981' : '#f43f5e'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <polyline points={pts.join(' ')} fill="none" stroke={positive ? '#88E09C' : '#f43f5e'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
     );
 };
@@ -120,8 +120,8 @@ const LineChart = ({ data }: { data: { date: string; visits: number }[] }) => {
         <svg viewBox={`0 0 ${W} ${H}`} width="100%" className="overflow-visible" onMouseMove={handleMouseMove} onMouseLeave={() => setHoveredIdx(null)}>
             <defs>
                 <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity="0.16" />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity="0.01" />
+                    <stop offset="0%" stopColor="#88E09C" stopOpacity="0.16" />
+                    <stop offset="100%" stopColor="#88E09C" stopOpacity="0.01" />
                 </linearGradient>
             </defs>
 
@@ -141,11 +141,11 @@ const LineChart = ({ data }: { data: { date: string; visits: number }[] }) => {
             <path d={areaPath} fill={`url(#${gradId})`} />
 
             {/* Smooth line */}
-            <path d={linePath} fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={linePath} fill="none" stroke="#88E09C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 
             {/* Dots */}
             {pts.map((p, i) => (
-                <circle key={i} cx={p.x} cy={p.y} r={hoveredIdx === i ? 5 : 3.5} fill="#10B981" stroke="white" strokeWidth="1.5" style={{ transition: 'r 0.1s' }} />
+                <circle key={i} cx={p.x} cy={p.y} r={hoveredIdx === i ? 5 : 3.5} fill="#88E09C" stroke="white" strokeWidth="1.5" style={{ transition: 'r 0.1s' }} />
             ))}
 
             {/* X labels */}
@@ -160,11 +160,11 @@ const LineChart = ({ data }: { data: { date: string; visits: number }[] }) => {
                 const ty = Math.max(PAD_T, hovered.y - TH / 2);
                 return (
                     <g>
-                        <line x1={hovered.x} y1={PAD_T} x2={hovered.x} y2={PAD_T + chartH} stroke="#10B981" strokeWidth="1" strokeDasharray="3,2" opacity="0.45" />
+                        <line x1={hovered.x} y1={PAD_T} x2={hovered.x} y2={PAD_T + chartH} stroke="#88E09C" strokeWidth="1" strokeDasharray="3,2" opacity="0.45" />
                         <g transform={`translate(${tx},${ty})`}>
                             <rect width={TW} height={TH} rx="6" fill="white" stroke="#e5e7eb" strokeWidth="0.75" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.08))' }} />
                             <text x="8" y="14" fontSize="9" fill="#6b7280" fontWeight="500">{hovered.date.replace('-', '/')}</text>
-                            <text x="8" y="27" fontSize="11" fill="#10B981" fontWeight="700">{formatVisits(hovered.visits)}</text>
+                            <text x="8" y="27" fontSize="11" fill="#88E09C" fontWeight="700">{formatVisits(hovered.visits)}</text>
                         </g>
                     </g>
                 );
@@ -201,7 +201,7 @@ const SiteCard = ({
         <div className="glass-card overflow-hidden animate-fade-in">
             <button
                 onClick={onToggle}
-                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/30 transition-all text-left"
+                className="w-full flex items-center justify-between px-4 py-3.5 hover:bg-white/[0.06] transition-all text-left"
             >
                 <div className="flex flex-col gap-1 min-w-0">
                     <span className="text-[13px] font-semibold text-heading truncate">{site.domain}</span>
@@ -213,7 +213,7 @@ const SiteCard = ({
                             <span className="text-[11px] text-muted">·</span>
                             <span className="text-[11px] text-muted">{formatRank(snap.globalRank)} global</span>
                             {delta !== 0 && (
-                                <div className={`flex items-center gap-0.5 text-[11px] font-medium ${positive ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                <div className={`flex items-center gap-0.5 text-[11px] font-medium ${positive ? 'text-[color:#88E09C]' : 'text-rose-500'}`}>
                                     {positive ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
                                     <span>{positive ? '+' : ''}{delta.toFixed(1)}%</span>
                                 </div>
@@ -350,14 +350,14 @@ const WebsiteTracker = ({ onBack }: WebsiteTrackerProps) => {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
-                        className="p-2.5 glass-card hover:bg-white/55 transition-all rounded-xl text-muted hover:text-primary"
+                        className="p-2.5 glass-card hover:bg-white/[0.10] transition-all rounded-none text-muted hover:text-primary"
                         aria-label="Back"
                     >
                         <span className="text-sm font-medium">← Back</span>
                     </button>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="p-3 accent-gradient rounded-[18px] shadow-[0_8px_20px_rgba(16,185,129,0.25)] ring-1 ring-white/40">
+                    <div className="p-3 accent-gradient rounded-none shadow-[0_8px_20px_rgba(136,224,156,0.25)] ring-1 ring-white/40">
                         <TrendingUp size={18} className="text-white" />
                     </div>
                     <div>
@@ -376,19 +376,19 @@ const WebsiteTracker = ({ onBack }: WebsiteTrackerProps) => {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => { if (e.key === 'Enter') addSite(input); }}
                         placeholder="domain.com"
-                        className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/50 border border-white/50 text-[12px] text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all"
+                        className="flex-1 px-3.5 py-2.5 rounded-none bg-white/[0.06] border border-white/[0.10] text-[12px] text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-[#0A0D0C] transition-all"
                     />
                     <button
                         onClick={addCurrentTab}
                         title="Add current tab"
-                        className="px-3 py-2.5 rounded-xl glass-card hover:bg-white/55 text-[11px] font-semibold text-accent transition-all whitespace-nowrap"
+                        className="px-3 py-2.5 rounded-none glass-card hover:bg-white/[0.10] text-[11px] font-semibold text-accent transition-all whitespace-nowrap"
                     >
                         + Tab
                     </button>
                     <button
                         onClick={() => addSite(input)}
                         disabled={!input.trim()}
-                        className="px-3.5 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        className="px-3.5 py-2.5 rounded-none accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(136,224,156,0.3)] hover:shadow-[0_6px_18px_rgba(136,224,156,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                     >
                         <Plus size={14} />
                         Add

@@ -119,7 +119,7 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                                                 borderRadius: 8,
                                                 cursor: 'pointer',
                                                 background: value === model.id
-                                                    ? 'rgba(16,185,129,0.1)'
+                                                    ? 'rgba(136,224,156,0.1)'
                                                     : 'transparent',
                                             }}
                                         >
@@ -135,7 +135,7 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                                                     padding: '2px 6px',
                                                     borderRadius: 99,
                                                     background: model.status === 'stable' ? '#d1fae5' : '#fef3c7',
-                                                    color: model.status === 'stable' ? '#047857' : '#b45309',
+                                                    color: model.status === 'stable' ? '#004BB8' : '#b45309',
                                                 }}
                                             >
                                                 {model.status}
@@ -174,7 +174,7 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                                         padding: '6px 12px',
                                         borderRadius: 8,
                                         border: 'none',
-                                        background: 'linear-gradient(135deg, #059669, #10b981)',
+                                        background: 'linear-gradient(135deg, #4A8A5A, #88e09c)',
                                         color: 'white',
                                         fontSize: 11,
                                         fontWeight: 600,
@@ -223,10 +223,10 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                             <div
                                 key={model.id}
                                 onClick={() => handleSelect(model.id)}
-                                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
+                                className={`flex items-center gap-3 px-3 py-2.5 rounded-none cursor-pointer transition-all ${
                                     value === model.id
                                         ? 'bg-accent/10 border border-accent/30'
-                                        : 'bg-white/30 border border-white/40 hover:bg-white/50'
+                                        : 'bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.06]'
                                 }`}
                             >
                                 <input
@@ -235,7 +235,7 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                                     checked={value === model.id}
                                     onChange={() => handleSelect(model.id)}
                                     aria-label={model.label}
-                                    className="accent-emerald-600 w-3.5 h-3.5 flex-shrink-0"
+                                    className="accent-[#88E09C] w-3.5 h-3.5 flex-shrink-0"
                                 />
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
@@ -243,9 +243,9 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                                             {model.label}
                                         </span>
                                         <span
-                                            className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                                            className={`text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-none flex-shrink-0 ${
                                                 model.status === 'stable'
-                                                    ? 'bg-emerald-100 text-emerald-700'
+                                                    ? 'bg-[rgba(136,224,156,0.10)] text-[color:#B8FFC7]'
                                                     : 'bg-amber-100 text-amber-700'
                                             }`}
                                         >
@@ -270,11 +270,11 @@ const ModelSelector = ({ value, onChange, compact }: ModelSelectorProps) => {
                     onChange={(e) => setCustomModel(e.target.value)}
                     onKeyDown={(e) => { if (e.key === 'Enter') handleUseCustom(); }}
                     placeholder="Custom model ID"
-                    className="flex-1 px-3.5 py-2.5 rounded-xl bg-white/50 border border-white/50 text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all"
+                    className="flex-1 px-3.5 py-2.5 rounded-none bg-white/[0.06] border border-white/[0.10] text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-[#0A0D0C] transition-all"
                 />
                 <button
                     onClick={handleUseCustom}
-                    className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all"
+                    className="px-4 py-2.5 rounded-none accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(136,224,156,0.3)] hover:shadow-[0_6px_18px_rgba(136,224,156,0.4)] transition-all"
                 >
                     Use
                 </button>

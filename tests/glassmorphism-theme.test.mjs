@@ -11,30 +11,33 @@ const readSource = (relativePath) =>
   readFileSync(join(repoRoot, relativePath), 'utf8');
 
 const assertNoForbiddenColors = (source, label) => {
-  const forbidden = ['violet', 'fuchsia', 'indigo', 'purple', 'blue'];
+  const forbidden = ['violet', 'fuchsia', 'indigo', 'purple'];
   for (const token of forbidden) {
     assert.ok(!source.includes(token), `${label}: should not include ${token}`);
   }
 };
 
-test('Glassmorphism theme variables and classes exist', () => {
+test('Terminal relay theme variables and classes exist', () => {
   const css = readSource('src/index.css');
   assert.match(css, /:root,\s*:host\s*\{[\s\S]*--background-gradient:/, 'Expected theme tokens on :host for shadow DOM');
-  assert.match(css, /--background-gradient:\s*linear-gradient\(120deg, #d4fc79 0%, #96e6a1 100%\);/, 'Expected green background gradient');
-  assert.match(css, /--glass-panel-bg:\s*rgba\(255,\s*255,\s*255,\s*0\.65\);/, 'Expected glass-panel background token');
-  assert.match(css, /--glass-card-bg:\s*rgba\(255,\s*255,\s*255,\s*0\.4\);/, 'Expected glass-card background token');
-  assert.match(css, /--accent-gradient:\s*linear-gradient\(to right, #059669, #10B981\);/, 'Expected accent gradient token');
+  assert.match(css, /--bg:\s*#0A0D0C;/, 'Expected terminal background token');
+  assert.match(css, /--phosphor:\s*#88E09C;/, 'Expected phosphor accent token');
+  assert.match(css, /--amber:\s*#F0A830;/, 'Expected amber warning token');
+  assert.match(css, /--accent-gradient:\s*linear-gradient\(90deg, #4A8A5A 0%, #88E09C 100%\);/, 'Expected phosphor accent gradient token');
+  assert.match(css, /\.terminal-frame\s*\{[\s\S]*font-family:\s*var\(--font-mono\)/, 'Expected terminal frame shell');
+  assert.match(css, /\.terminal-display\s*\{[\s\S]*font-family:\s*var\(--font-display\)/, 'Expected display font class');
   assert.match(css, /\.glass-panel\s*\{[\s\S]*background:\s*var\(--glass-panel-bg\)/, 'Expected glass-panel background');
-  assert.match(css, /\.glass-panel[\s\S]*backdrop-filter:\s*blur\(20px\)/, 'Expected glass-panel blur');
+  assert.match(css, /\.glass-panel\s*\{[\s\S]*border-radius:\s*0/, 'Expected hard-edged terminal panel radius');
   assert.match(css, /\.glass-card\s*\{[\s\S]*background:\s*var\(--glass-card-bg\)/, 'Expected glass-card background');
-  assert.match(css, /\.glass-card[\s\S]*backdrop-filter:\s*blur\(16px\)/, 'Expected glass-card blur');
+  assert.match(css, /\.glass-card\s*\{[\s\S]*border-radius:\s*0/, 'Expected hard-edged terminal card radius');
   assert.match(css, /\.accent-gradient\s*\{[\s\S]*var\(--accent-gradient\)/, 'Expected accent gradient');
 });
 
-test('Popup uses glass and accent classes', () => {
+test('Popup uses terminal relay classes', () => {
   const app = readSource('src/popup/App.tsx');
-  assert.match(app, /glass-panel/, 'Expected glass-panel class in App');
-  assert.match(app, /accent-gradient/, 'Expected accent-gradient class in App');
+  assert.match(app, /terminal-frame/, 'Expected terminal frame class in App');
+  assert.match(app, /terminal-display/, 'Expected terminal display title in App');
+  assert.match(app, /terminal-button/, 'Expected terminal buttons in App');
 });
 
 test('Overlay uses overlay panel and accent classes', () => {
@@ -59,7 +62,7 @@ test('Shadow host applies popup font and text color', () => {
   assert.match(css, /:host\s*\{[\s\S]*color:\s*var\(--text-primary\)/, 'Expected text color on :host');
 });
 
-test('Forbidden blue/purple tokens are absent', () => {
+test('Forbidden purple tokens are absent', () => {
   assertNoForbiddenColors(readSource('src/index.css'), 'index.css');
   assertNoForbiddenColors(readSource('src/popup/App.tsx'), 'App.tsx');
   assertNoForbiddenColors(readSource('src/popup/components/ProfileList.tsx'), 'ProfileList.tsx');

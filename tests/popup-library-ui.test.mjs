@@ -10,10 +10,10 @@ const repoRoot = join(__dirname, '..');
 const readSource = (relativePath) =>
   readFileSync(join(repoRoot, relativePath), 'utf8');
 
-test('App renders list view without inner container shell', () => {
+test('App renders list view tools without inner container shell', () => {
   const app = readSource('src/popup/App.tsx');
-  const pattern = /currentView === 'list'[\s\S]*\?\s*\([\s\S]*<ProfileList[\s\S]*?\)\s*:\s*\([\s\S]*<div[^>]*glass-card[\s\S]*<ProfileEditor/;
-  assert.match(app, pattern, 'Expected list view to render ProfileList directly and only wrap editor view');
+  assert.match(app, /currentView === 'list'[\s\S]*<BatchGoogleSearch \/>[\s\S]*<ProfileList/, 'Expected list view to render BatchGoogleSearch and ProfileList directly');
+  assert.doesNotMatch(app, /<div[^>]*glass-card[\s\S]*<ProfileEditor/, 'Expected editor view without an extra heavy shell');
 });
 
 test('App owns global scrollbar and scroll state', () => {
@@ -23,22 +23,22 @@ test('App owns global scrollbar and scroll state', () => {
   assert.match(app, /onScroll=\{handleScroll\}/, 'Expected onScroll handler in App');
 });
 
-test('Profile list is full-bleed and not a scroll container', () => {
+test('Profile list is compact and not a scroll container', () => {
   const list = readSource('src/popup/components/ProfileList.tsx');
   assert.doesNotMatch(list, /custom-scrollbar/, 'Did not expect custom-scrollbar in ProfileList');
   assert.doesNotMatch(list, /onScroll=\{handleScroll\}/, 'Did not expect onScroll handler in ProfileList');
   assert.doesNotMatch(list, /overflow-y-auto/, 'Did not expect overflow-y-auto in ProfileList');
-  assert.match(list, /\bpx-0\b/, 'Expected full-bleed list container with px-0');
+  assert.match(list, /terminal-label/, 'Expected terminal section label');
+  assert.match(list, /terminal-panel/, 'Expected a hard-edged terminal list container');
 });
 
-test('Profile list cards use soft separators without heavy shells', () => {
+test('Profile list rows use soft separators without heavy shells', () => {
   const list = readSource('src/popup/components/ProfileList.tsx');
   const cardMatch = list.match(/className="group[\s\S]*?"\s*style=\{\{ animationDelay/);
   assert.ok(cardMatch, 'Expected list item className near animationDelay');
   const cardClass = cardMatch[0];
-  assert.match(cardClass, /after:bg-gradient-to-r/, 'Expected soft separator gradient on list items');
-  assert.doesNotMatch(cardClass, /bg-zinc-950\/60/, 'Expected no heavy card background on list items');
-  assert.doesNotMatch(cardClass, /border\s+border-white\/5/, 'Expected no heavy borders on list items');
+  assert.match(cardClass, /border-dashed border-\[var\(--ink-ghost\)\]/, 'Expected terminal dashed separators on list rows');
+  assert.doesNotMatch(cardClass, /border\s+border-black/, 'Expected no light-theme borders on list items');
 });
 
 test('Profile editor relies on global scrollbar', () => {
@@ -47,10 +47,10 @@ test('Profile editor relies on global scrollbar', () => {
   assert.doesNotMatch(editor, /overflow-y-auto/, 'Did not expect overflow-y-auto in ProfileEditor');
 });
 
-test('Custom scrollbar hides until hover or scroll', () => {
+test('Custom scrollbar uses terminal rail styling', () => {
   const css = readSource('src/index.css');
-  assert.match(css, /\.custom-scrollbar\s*\{[\s\S]*scrollbar-color:\s*transparent\s+transparent;/, 'Expected transparent scrollbar by default');
+  assert.match(css, /\.custom-scrollbar\s*\{[\s\S]*scrollbar-color:\s*var\(--ink-faint\)\s+transparent;/, 'Expected terminal scrollbar by default');
   assert.match(css, /\.custom-scrollbar:hover/, 'Expected hover scrollbar styles');
   assert.match(css, /\.custom-scrollbar\.is-scrolling/, 'Expected scroll-state scrollbar styles');
-  assert.match(css, /custom-scrollbar::-webkit-scrollbar-thumb\s*\{[\s\S]*background:\s*transparent;/, 'Expected transparent scrollbar thumb by default');
+  assert.match(css, /custom-scrollbar::-webkit-scrollbar-thumb\s*\{[\s\S]*background:\s*var\(--ink-faint\);/, 'Expected visible terminal scrollbar thumb by default');
 });

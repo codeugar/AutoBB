@@ -6,44 +6,36 @@ import ProfileEditor from './components/ProfileEditor';
 import ApiKeySettings from './components/ApiKeySettings';
 import WebsiteTracker from './components/WebsiteTracker';
 import SerpSearch from './components/SerpSearch';
-import { Zap, MonitorOff, Globe, Settings, TrendingUp, Search } from 'lucide-react';
+import BatchGoogleSearch from './components/BatchGoogleSearch';
+import { MonitorOff, Globe, Settings, TrendingUp, Search } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-// Design-driven Toggle Switch
 const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => {
     return (
         <button
             onClick={(e) => { e.stopPropagation(); onToggle(); }}
             aria-hidden="true"
             tabIndex={-1}
-            className={`
-                relative w-11 h-6 rounded-full transition-all duration-500 flex-shrink-0 border border-white/40
-                ${enabled ? 'accent-gradient shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'bg-white/40'}
-            `}
-        >
-            <div className={`
-                absolute top-1 w-4 h-4 rounded-full bg-white shadow-[0_2px_8px_rgba(6,78,59,0.25)]
-                transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
-                ${enabled ? 'translate-x-[20px]' : 'translate-x-1'}
-            `} />
-        </button>
+            className={`terminal-toggle flex-shrink-0 ${enabled ? 'on' : ''}`}
+        />
     );
 };
 
-const ControlCard = ({ icon: Icon, label, enabled, onToggle }: { icon: any; label: string; enabled: boolean; onToggle: () => void }) => (
+const ControlCard = ({ icon: Icon, label, enabled, onToggle }: { icon: LucideIcon; label: string; enabled: boolean; onToggle: () => void }) => (
     <div
         role="button"
         tabIndex={0}
         aria-pressed={enabled}
         onClick={onToggle}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
-        className="flex items-center justify-between p-4 glass-card hover:bg-white/55 hover:border-white/60 transition-all cursor-pointer group"
+        className="flex items-center justify-between min-h-9 px-3 py-2 border-b border-dashed border-[var(--ink-ghost)] last:border-b-0 hover:bg-[rgba(136,224,156,0.045)] transition-all cursor-pointer group"
     >
-        <div className="flex items-center gap-4">
-            <div className={`p-2.5 rounded-xl transition-all duration-300 glass-card ${enabled ? 'text-accent scale-110' : 'text-muted'}`}>
-                <Icon size={18} />
+        <div className="flex items-center gap-2 min-w-0">
+            <div className={`w-6 h-6 flex items-center justify-center border transition-all duration-150 ${enabled ? 'border-[var(--phosphor-dim)] text-[var(--phosphor)]' : 'border-[var(--ink-ghost)] text-muted'}`}>
+                <Icon size={14} />
             </div>
-            <div className="flex flex-col">
-                <span className={`text-[13px] font-semibold tracking-tight ${enabled ? 'text-heading' : 'text-muted'}`}>
+            <div className="min-w-0">
+                <span className={`block text-[10px] font-semibold uppercase tracking-[0.16em] truncate ${enabled ? 'text-heading' : 'text-muted'}`}>
                     {label}
                 </span>
             </div>
@@ -64,7 +56,31 @@ const App = () => {
     const scrollTimeoutRef = useRef<number | null>(null);
 
     useEffect(() => {
-        loadData();
+        if (typeof chrome === 'undefined' || !chrome.storage?.local) {
+            return;
+        }
+
+        void Promise.all([
+            storage.getProfiles(),
+            storage.getGlobalDisabled()
+        ]).then(async ([profilesData, globalDisabled]) => {
+            setProfiles(profilesData);
+            setIsGlobalEnabled(!globalDisabled);
+
+            const tabs = chrome.tabs?.query
+                ? await chrome.tabs.query({ active: true, currentWindow: true })
+                : [];
+            if (tabs[0]?.url) {
+                try {
+                    const domain = new URL(tabs[0].url).hostname;
+                    setCurrentDomain(domain);
+                    const siteDisabled = await storage.getSiteDisabled(domain);
+                    setIsCurrentSiteEnabled(!siteDisabled);
+                } catch {
+                    setCurrentDomain('');
+                }
+            }
+        });
     }, []);
 
     useEffect(() => {
@@ -74,26 +90,6 @@ const App = () => {
             }
         };
     }, []);
-
-    const loadData = async () => {
-        const [profilesData, globalDisabled] = await Promise.all([
-            storage.getProfiles(),
-            storage.getGlobalDisabled()
-        ]);
-
-        setProfiles(profilesData);
-        setIsGlobalEnabled(!globalDisabled);
-
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tabs[0]?.url) {
-            try {
-                const domain = new URL(tabs[0].url).hostname;
-                setCurrentDomain(domain);
-                const siteDisabled = await storage.getSiteDisabled(domain);
-                setIsCurrentSiteEnabled(!siteDisabled);
-            } catch (e) { }
-        }
-    };
 
     const toggleGlobal = async () => {
         const newState = !isGlobalEnabled;
@@ -120,40 +116,47 @@ const App = () => {
 
     return (
         <div
-            onScroll={handleScroll}
-            className={`w-[400px] max-w-[400px] h-[600px] font-sans text-primary overflow-y-auto overflow-x-hidden relative select-none box-border custom-scrollbar glass-panel ${isScrolling ? 'is-scrolling' : ''}`}
+            className="terminal-frame w-[460px] max-w-[460px] h-[600px] overflow-hidden select-none box-border"
         >
-            <div className="min-h-full flex flex-col relative z-10">
-                {/* Header Section - Dashboard Only */}
+            <div className="h-full flex flex-col relative z-[2]">
                 {currentView === 'list' && (
-                    <header className="flex-shrink-0 px-7 pt-10 pb-6 flex flex-col gap-8 relative z-20 animate-fade-in">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-5">
-                                <div className="p-3.5 accent-gradient rounded-[22px] shadow-[0_10px_24px_rgba(16,185,129,0.3)] ring-1 ring-white/40">
-                                    <Zap size={22} className="text-white fill-white/30" />
+                    <header className="flex-shrink-0 px-[18px] pt-[18px] pb-3 relative z-20 animate-fade-in">
+                        <div className="flex items-end justify-between gap-3 pb-3 border-b border-[var(--ink-faint)] relative after:content-[''] after:absolute after:-bottom-px after:left-0 after:w-6 after:h-px after:bg-[var(--phosphor)]">
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2 text-[9px] uppercase tracking-[0.18em] text-muted">
+                                    <span className="terminal-dot" />
+                                    AUTOBB · MV3 NODE
                                 </div>
-                                <div>
-                                    <h1 className="text-2xl font-black tracking-tight text-heading leading-none">
-                                        AutoBB
-                                    </h1>
-                                    <div className="flex items-center gap-3 mt-2.5">
-                                        <span className="glass-card text-accent text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-[0.1em]">v1.2.4 PRO</span>
-                                    </div>
+                                <h1 className="terminal-display mt-1 text-[30px] leading-none">
+                                    AUTOBB
+                                </h1>
+                            </div>
+                            <div className="flex items-end gap-2">
+                                <div className="text-[9px] uppercase tracking-[0.12em] text-muted text-right leading-[1.45]">
+                                    v1.4<br />
+                                    SEARCH · AUTOFILL
                                 </div>
+                                <button
+                                    onClick={() => setCurrentView('settings')}
+                                    className="terminal-button h-8 w-8 px-0"
+                                    aria-label="Settings"
+                                >
+                                    <Settings size={14} />
+                                </button>
                             </div>
                         </div>
 
-                        {/* Dashboard Controls - Vertical Stack for 400px Width */}
-                        <div className="flex flex-col gap-3.5">
+                        <div className="terminal-label mt-3 mb-1.5">SYSTEM FLAGS</div>
+                        <div className="terminal-panel text-[var(--ink)]">
                             <ControlCard
                                 icon={MonitorOff}
-                                label="Overlay Interaction"
+                                label="Overlay layer"
                                 enabled={isGlobalEnabled}
                                 onToggle={toggleGlobal}
                             />
                             <ControlCard
                                 icon={Globe}
-                                label="Active Domain Restriction"
+                                label={currentDomain || 'Current site'}
                                 enabled={isCurrentSiteEnabled}
                                 onToggle={toggleSite}
                             />
@@ -162,7 +165,10 @@ const App = () => {
                 )}
 
                 {/* Dynamic Content Frame */}
-                <main className={`flex-1 relative z-10 flex flex-col ${currentView === 'list' ? 'pb-6' : 'p-0'}`}>
+                <main
+                    onScroll={handleScroll}
+                    className={`flex-1 min-h-0 relative z-10 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar ${isScrolling ? 'is-scrolling' : ''} ${currentView === 'list' ? 'pb-4' : 'p-0 pb-4'}`}
+                >
                     {currentView === 'settings' ? (
                         <ApiKeySettings onBack={() => setCurrentView('list')} />
                     ) : currentView === 'tracker' ? (
@@ -170,11 +176,14 @@ const App = () => {
                     ) : currentView === 'serp' ? (
                         <SerpSearch onBack={() => setCurrentView('list')} />
                     ) : currentView === 'list' ? (
-                        <ProfileList
-                            profiles={profiles}
-                            onEdit={(p) => { setEditingProfile(p); setCurrentView('editor'); }}
-                            onCreate={() => { setEditingProfile(null); setCurrentView('editor'); }}
-                        />
+                        <>
+                            <BatchGoogleSearch />
+                            <ProfileList
+                                profiles={profiles}
+                                onEdit={(p) => { setEditingProfile(p); setCurrentView('editor'); }}
+                                onCreate={() => { setEditingProfile(null); setCurrentView('editor'); }}
+                            />
+                        </>
                     ) : (
                         <ProfileEditor
                             profile={editingProfile}
@@ -183,6 +192,11 @@ const App = () => {
                                 const updated = await storage.getProfiles();
                                 setProfiles(updated);
                                 setCurrentView('list');
+                            }}
+                            onAutoSave={async (p) => {
+                                await storage.saveProfile(p);
+                                const updated = await storage.getProfiles();
+                                setProfiles(updated);
                             }}
                             onCancel={() => setCurrentView('list')}
                             onDelete={async (id) => {
@@ -195,29 +209,28 @@ const App = () => {
                     )}
                 </main>
 
-                {/* Premium Footer */}
-                <footer className="px-10 py-5 flex items-center justify-between bg-white/45 border-t border-white/50 relative z-20">
-                    <div className="flex gap-8">
+                <footer className="flex-shrink-0 px-[18px] py-3 flex items-center justify-center bg-[var(--bg)] border-t border-[var(--ink-faint)] relative z-20">
+                    <div className="w-full grid grid-cols-3 gap-1.5">
                         <button
                             onClick={() => setCurrentView('settings')}
-                            className="text-muted flex items-center gap-2.5 transition-all group hover:text-accent"
+                            className={`terminal-button ${currentView === 'settings' ? 'primary' : ''}`}
                         >
-                            <Settings size={18} className="group-hover:rotate-45 transition-transform" />
-                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted group-hover:text-accent">Settings</span>
+                            <Settings size={13} />
+                            SET
                         </button>
                         <button
                             onClick={() => setCurrentView('tracker')}
-                            className="text-muted flex items-center gap-2.5 transition-all group hover:text-accent"
+                            className={`terminal-button ${currentView === 'tracker' ? 'primary' : ''}`}
                         >
-                            <TrendingUp size={18} />
-                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted group-hover:text-accent">Tracker</span>
+                            <TrendingUp size={13} />
+                            RANK
                         </button>
                         <button
                             onClick={() => setCurrentView('serp')}
-                            className="text-muted flex items-center gap-2.5 transition-all group hover:text-accent"
+                            className={`terminal-button ${currentView === 'serp' ? 'primary' : ''}`}
                         >
-                            <Search size={18} />
-                            <span className="text-[11px] font-medium uppercase tracking-widest text-muted group-hover:text-accent">SERP</span>
+                            <Search size={13} />
+                            SERP
                         </button>
                     </div>
                 </footer>

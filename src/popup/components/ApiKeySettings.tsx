@@ -8,12 +8,12 @@ const MiniToggle = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => v
     <button
         onClick={onToggle}
         className={`
-            relative w-11 h-6 rounded-full transition-all duration-500 flex-shrink-0 border border-white/40
-            ${enabled ? 'accent-gradient shadow-[0_0_18px_rgba(16,185,129,0.35)]' : 'bg-white/40'}
+            relative w-11 h-6 rounded-none transition-all duration-500 flex-shrink-0 border border-white/[0.08]
+            ${enabled ? 'accent-gradient shadow-[0_0_18px_rgba(136,224,156,0.35)]' : 'bg-white/[0.08]'}
         `}
     >
         <div className={`
-            absolute top-1 w-4 h-4 rounded-full bg-white shadow-[0_2px_8px_rgba(6,78,59,0.25)]
+            absolute top-1 w-4 h-4 rounded-none bg-white shadow-[0_2px_8px_rgba(0,0,0,0.35)]
             transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
             ${enabled ? 'translate-x-[20px]' : 'translate-x-1'}
         `} />
@@ -102,14 +102,14 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={onBack}
-                        className="p-2.5 glass-card hover:bg-white/55 transition-all rounded-xl text-muted hover:text-primary"
+                        className="p-2.5 glass-card hover:bg-white/[0.10] transition-all rounded-none text-muted hover:text-primary"
                         aria-label="Back"
                     >
                         <span className="text-sm font-medium">← Back</span>
                     </button>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="p-3 accent-gradient rounded-[18px] shadow-[0_8px_20px_rgba(16,185,129,0.25)] ring-1 ring-white/40">
+                    <div className="p-3 accent-gradient rounded-none shadow-[0_8px_20px_rgba(136,224,156,0.25)] ring-1 ring-white/40">
                         <KeyRound size={18} className="text-white" />
                     </div>
                     <div>
@@ -138,7 +138,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                                 value={apiKey}
                                 onChange={(e) => setApiKey(e.target.value)}
                                 placeholder="AIza..."
-                                className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-white/50 border border-white/50 text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all"
+                                className="w-full px-3.5 py-2.5 pr-10 rounded-none bg-white/[0.06] border border-white/[0.10] text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-[#0A0D0C] transition-all"
                             />
                             <button
                                 onClick={() => setRevealed((v) => !v)}
@@ -152,7 +152,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         <button
                             onClick={handleSaveKey}
                             disabled={!apiKey.trim()}
-                            className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            className="px-4 py-2.5 rounded-none accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(136,224,156,0.3)] hover:shadow-[0_6px_18px_rgba(136,224,156,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                         >
                             {keySaved ? <CheckCircle size={13} /> : <Save size={13} />}
                             {keySaved ? 'Saved' : 'Save'}
@@ -184,7 +184,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                                 value={openRouterKey}
                                 onChange={(e) => setOpenRouterKey(e.target.value)}
                                 placeholder="sk-or-v1-..."
-                                className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-white/50 border border-white/50 text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all"
+                                className="w-full px-3.5 py-2.5 pr-10 rounded-none bg-white/[0.06] border border-white/[0.10] text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-[#0A0D0C] transition-all"
                             />
                             <button
                                 onClick={() => setOpenRouterRevealed((v) => !v)}
@@ -198,7 +198,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         <button
                             onClick={handleSaveOpenRouterKey}
                             disabled={!openRouterKey.trim()}
-                            className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            className="px-4 py-2.5 rounded-none accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(136,224,156,0.3)] hover:shadow-[0_6px_18px_rgba(136,224,156,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                         >
                             {openRouterKeySaved ? <CheckCircle size={13} /> : <Save size={13} />}
                             {openRouterKeySaved ? 'Saved' : 'Save'}
@@ -222,7 +222,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         <div>
                             <p className="text-[13px] font-semibold text-heading mb-1">AI Prompt</p>
                             <p className="text-[11px] text-muted leading-relaxed">
-                                自定义 AI 解释时使用的提示词。用 <code className="text-accent bg-white/40 px-1 rounded">{"\"}"}</code> 结尾，词语会自动附加在后面。
+                                自定义 AI 解释时使用的提示词。用 <code className="text-accent bg-white/[0.08] px-1 rounded">{"\"}"}</code> 结尾，词语会自动附加在后面。
                             </p>
                         </div>
                         <button
@@ -239,7 +239,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         value={prompt}
                         onChange={(e) => setPrompt(e.target.value)}
                         rows={7}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-white/50 border border-white/50 text-[12px] text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all resize-none leading-relaxed"
+                        className="w-full px-3.5 py-2.5 rounded-none bg-white/[0.06] border border-white/[0.10] text-[12px] text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-[#0A0D0C] transition-all resize-none leading-relaxed"
                     />
 
                     <div className="flex items-center justify-between">
@@ -252,7 +252,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         <button
                             onClick={handleSavePrompt}
                             disabled={!prompt.trim()}
-                            className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            className="px-4 py-2.5 rounded-none accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(136,224,156,0.3)] hover:shadow-[0_6px_18px_rgba(136,224,156,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                         >
                             {promptSaved ? <CheckCircle size={13} /> : <Save size={13} />}
                             {promptSaved ? 'Saved' : 'Save Prompt'}
@@ -288,7 +288,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                                 value={serperKey}
                                 onChange={(e) => setSerperKey(e.target.value)}
                                 placeholder="Your Serper API key..."
-                                className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-white/50 border border-white/50 text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-white/70 transition-all"
+                                className="w-full px-3.5 py-2.5 pr-10 rounded-none bg-white/[0.06] border border-white/[0.10] text-[12px] font-mono text-primary placeholder:text-muted focus:outline-none focus:border-accent/50 focus:bg-[#0A0D0C] transition-all"
                             />
                             <button
                                 onClick={() => setSerperRevealed((v) => !v)}
@@ -302,7 +302,7 @@ const ApiKeySettings = ({ onBack }: ApiKeySettingsProps) => {
                         <button
                             onClick={handleSaveSerperKey}
                             disabled={!serperKey.trim()}
-                            className="px-4 py-2.5 rounded-xl accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_18px_rgba(16,185,129,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            className="px-4 py-2.5 rounded-none accent-gradient text-white text-[12px] font-semibold shadow-[0_4px_12px_rgba(136,224,156,0.3)] hover:shadow-[0_6px_18px_rgba(136,224,156,0.4)] transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                         >
                             {serperKeySaved ? <CheckCircle size={13} /> : <Save size={13} />}
                             {serperKeySaved ? 'Saved' : 'Save'}

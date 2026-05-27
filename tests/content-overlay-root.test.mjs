@@ -29,3 +29,11 @@ test('content script injects popup fonts into shadow root', () => {
   assert.match(source, /fonts\.googleapis\.com\/css2\?family=Plus\+Jakarta\+Sans/, 'Expected Plus Jakarta Sans font link');
   assert.match(source, /family=JetBrains\+Mono/, 'Expected JetBrains Mono font link');
 });
+
+test('shadow theme pins Tailwind sizing tokens to pixels', () => {
+  const css = readSource('src/index.css');
+  assert.match(css, /:root,\s*:host\s*\{[\s\S]*--spacing:\s*4px;/,
+    'Expected Tailwind spacing to be pixel-based inside the injected shadow root');
+  assert.match(css, /:root,\s*:host\s*\{[\s\S]*--text-sm:\s*14px;/,
+    'Expected Tailwind text sizing to be pixel-based inside the injected shadow root');
+});
